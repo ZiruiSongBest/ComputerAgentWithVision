@@ -1,0 +1,31 @@
+_command: 
+from friday.action.base_action import BaseAction
+import subprocess
+
+class open_notepad(BaseAction):
+    def __init__(self):
+        self._description = "Execute the system command to open Notepad on Windows."
+
+    def __call__(self, *args, **kwargs):
+        """
+        Opens Notepad on Windows using the subprocess module.
+
+        Args:
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            None. Opens Notepad application.
+        """
+        try:
+            subprocess.run('notepad.exe', check=True)
+            print("Notepad opened successfully.")
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to open Notepad: {e}")
+
+
+result=open_notepad()()
+print("<return>")
+print(result)
+print("</return>")
+args: []
