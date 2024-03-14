@@ -191,7 +191,7 @@ langchain/
 guidance/
 Auto-GPT/
 Agents/
-utils/
+# utils/
 
 /log
 /examples/log/*
