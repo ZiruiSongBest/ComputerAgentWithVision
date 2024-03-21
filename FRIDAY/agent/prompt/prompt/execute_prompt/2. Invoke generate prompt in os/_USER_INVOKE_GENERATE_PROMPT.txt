@@ -1,0 +1,6 @@
+User's information are as follows:
+Class Name: {class_name}
+Task Description: {task_description}
+__call__ Method Parameters: {args_description}
+Information of Prerequisite Tasks: {pre_tasks_info}
+Working Directory: {working_dir}

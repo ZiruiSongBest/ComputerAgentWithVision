@@ -1,0 +1,6 @@
+User's information is as follows:
+System Version: {system_version}
+System language: simplified chinese
+Working Directory: {working_dir}
+Task Name: {task_name}
+Task Description: {task_description}

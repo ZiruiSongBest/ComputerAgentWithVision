@@ -1,0 +1,7 @@
+User's information are as follows:
+System Version: {system_version}
+Task: {task}
+Action List: {action_list}
+API List: {api_list}
+Current Working Directiory: {working_dir}
+Files And Folders in Current Working Directiory: {files_and_folders}

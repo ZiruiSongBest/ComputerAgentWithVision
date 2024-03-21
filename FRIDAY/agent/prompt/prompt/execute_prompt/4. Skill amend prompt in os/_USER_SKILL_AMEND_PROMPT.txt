@@ -1,0 +1,9 @@
+User's information are as follows:
+Original Code: {original_code}
+Task: {task}
+Error Messages: {error}
+Code Output: {code_output}
+Current Working Directiory: {current_working_dir}
+Working Directiory: {working_dir}
+Files And Folders in Current Working Directiory: {files_and_folders}
+Critique On The Code: {critique}

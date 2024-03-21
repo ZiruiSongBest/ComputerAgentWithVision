@@ -1,0 +1,8 @@
+User's information are as follows:
+Current Code: {current_code}
+Task: {task}
+Code Output: {code_output}
+Current Working Directiory: {current_working_dir}
+Working Directory: {working_dir}
+Files And Folders in Current Working Directiory: {files_and_folders}
+Next Task: {next_action}

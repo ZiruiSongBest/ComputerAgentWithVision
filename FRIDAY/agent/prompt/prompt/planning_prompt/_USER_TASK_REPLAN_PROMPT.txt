@@ -1,0 +1,8 @@
+User's information are as follows:
+Current Task: {current_task}
+Current Task Description: {current_task_description}
+System Version: {system_version}
+reasoning: {reasoning}
+Action List: {action_list}
+Current Working Directiory: {working_dir}
+Files And Folders in Current Working Directiory: {files_and_folders}
