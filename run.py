@@ -23,7 +23,7 @@ def main():
     parser.add_argument('--logging_filedir', type=str, default='log', help='log path')
     parser.add_argument('--logging_filename', type=str, default='temp.log', help='log file name')
     parser.add_argument('--logging_prefix', type=str, default=random_string(16), help='log file prefix')
-    parser.add_argument('--score', type=int, default=8, help='critic score > score => store the tool')
+    parser.add_argument('--score', type=int, default=4, help='critic score > score => store the tool')
     args = parser.parse_args()
 
     if args.query is None:

@@ -332,11 +332,11 @@ Current Question: {current_question}
     'planning_prompt' : {
         '_SYSTEM_TASK_DECOMPOSE_PROMPT': '''
 You are an expert in making plans. 
-I will give you a task and ask you to decompose this task into a series of subtasks. These subtasks can form a directed acyclic graph, and each subtask is an atomic operation. Through the execution of topological sorting of subtasks, I can complete the entire task.
+I will give you a task and ask you to decompose this task into a series of subtasks. Each subtask is an atomic operation. Through the execution of sorting of subtasks, I can complete the entire task.
 You should only respond with a reasoning process and a JSON result in the format as described below:
 1. Carry out step-by-step reasoning based on the given task until the task is completed. Each step of reasoning is decomposed into sub-tasks. For example, the current task is to reorganize the text files containing the word 'agent' in the folder called document into the folder called agent. Then the reasoning process is as follows: According to Current Working Directiory and Files And Folders in Current Working Directiory information, the folders documernt and agent exist, so firstly, retrieve the txt text in the folder call document in the working directory. If the text contains the word "agent", save the path of the text file into the list, and return. Secondly, put the retrieved files into a folder named agent based on the file path list obtained by executing the previous task.
-2. There are three types of subtasks, the first is a task that requires the use of APIs to access internet resources to obtain information, such as retrieving information from the Internet, this type of task is called 'API subtask', and all available APIs are only listed in the API List. The second is a task that does not require the use of API tools but need to write code to complete, which is called 'Code subtask', 'Code subtask' usually only involves operating system or file operations. The third is called 'QA subtask', It neither requires writing code nor calling API to complete the task, it will analyze the current subtask description and the return results of the predecessor tasks to get an appropriate answer.
-3. Each decomposed subtask has four attributes: name, task description, and dependencies. 'name' abstracts an appropriate name based on the reasoning process of the current subtask. 'description' is the process of the current subtask, and if the current task is related to a corresponding file operation, the path to the file needs to be written in the 'description'. 'dependencies' refers to the list of task names that the current task depends on based on the reasoning process. These tasks must be executed before the current task. 'type' indicates whether the current task is a Code task or a API task or a QA task, If it is a Code task, its value is 'Code', if it is a API task, its value is 'API', if it is a QA task, its value is 'QA'.
+2. There are five types of subtasks, the first is a task that requires the use of APIs to access internet resources to obtain information, such as retrieving information from the Internet, this type of task is called 'API subtask', and all available APIs are only listed in the API List. The second is a task that does not require the use of API tools but need to write code to complete, which is called 'Code subtask', 'Code subtask' usually only involves operating system or file operations. The third task is called "Image subtask", which copilot need observe the screenshot to finish the subtask. The fourth is a task that need a Large video model to understand the video, which is called "Video task".   The fifth is called 'QA subtask', It is no need to write code, call APIs, observe screenshots, or understand videos to complete the task, it will analyze the current subtask description and the return results of the predecessor tasks to get an appropriate answer.
+3. Each decomposed subtask has four attributes: name, task description, and dependencies. 'name' abstracts an appropriate name based on the reasoning process of the current subtask. 'description' is the process of the current subtask, and if the current task is related to a corresponding file operation, the path to the file needs to be written in the 'description'. 'dependencies' refers to the list of task names that the current task depends on based on the reasoning process. These tasks must be executed before the current task. 'type' indicates whether the current task is a Code task or a API task or a Vision task or a video task or a QA task, If it is a Code task, its value is 'Code', if it is a API task, its value is 'API', if it is a Image task, its value is "image", if it a video task, Its value is "Video", if it is a QA task, its value is 'QA'.
 4. In JSON, each decomposed subtask contains four attributes: name, description, dependencies and type, which are obtained through reasoning about the task. The key of each subtask is the 'name' attribute of the subtask.
 5. Continuing with the example in 1, the format of the JSON data I want to get is as follows:
 ```json
@@ -353,8 +353,31 @@ You should only respond with a reasoning process and a JSON result in the format
 "dependencies": ["retrieve_files"],
 "type": "Code"
 }    
-}      
-```  
+}    
+```
+```json
+
+
+{
+"execute_system_command" :{
+"description": "Execute a system command to open the Google Chrome on macOS. The command is 'open -a \"Google Chrome\".",
+"description": [],
+"type": "Code"
+}
+"observe_screenshot" : {
+"name": "observe_screenshot",
+"description": "observe the screenshot, to determine which input filed should be clicked.",
+"dependencies" : [execute_system_command],
+"type": "Image"
+}
+"input_text": {
+"name": "input_text",
+"description": "input "Youtube.com" into the selected text field",
+"dependencies" : [observe_screenshot]
+"type":"Image"
+}
+}
+```
 And you should also follow the following criteria:
 1. A task can be decomposed down into one or more subtasks, depending on the complexity of the task.
 2. The Action List I gave you contains the name of each action and the corresponding operation description. These actions are all atomic code task. You can refer to these atomic operations to decompose the code task.
