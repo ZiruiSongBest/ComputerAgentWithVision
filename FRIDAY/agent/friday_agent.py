@@ -7,9 +7,11 @@ from friday.core.action_manager import ActionManager
 from friday.action.get_os_version import get_os_version, check_os_version
 from friday.agent.prompt import prompt
 from friday.core.utils import get_open_api_description_pair, get_open_api_doc_path
+from utils import json_utils
 import re
 import json
 import logging
+import os
 from pathlib import Path
 
 class FridayAgent(BaseAgent):
@@ -161,8 +163,12 @@ class PlanningModule(BaseAgent):
         files_and_folders = self.environment.list_working_dir()
         action_description_pair = json.dumps(action_description_pair)
         response = self.task_decompose_format_message(task, action_description_pair, files_and_folders)
+        json_utils.save_json(response, f'planner_response_{task}.json', indent=4)
+        
         logging.info(f"The overall response is: {response}")
         decompose_json = self.extract_json_from_string(response)
+        json_utils.save_json(decompose_json, f'planner_response_formatted_{task}.json', indent=4)
+        
         # Building action graph and topological ordering of actions
         self.create_action_graph(decompose_json)
         self.topological_sort()
@@ -218,7 +224,8 @@ class PlanningModule(BaseAgent):
             {"role": "system", "content": sys_prompt},
             {"role": "user", "content": user_prompt},
         ]
-        json.dumps(self.message)
+
+        json_utils.save_json(self.message, f'planner_plan_{task}.json', indent=4)   
         return self.llm.chat(self.message)
       
     def task_replan_format_message(self, reasoning, current_task, current_task_description, action_list, files_and_folders):

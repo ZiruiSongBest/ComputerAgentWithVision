@@ -1,0 +1,9 @@
+Executes the system command to open Google Chrome on macOS and navigates to the specified URL.
+
+        Args:
+            url (str): The URL to navigate to. Defaults to "http://youtube.com".
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            None, but prints a message confirming the execution of the command.

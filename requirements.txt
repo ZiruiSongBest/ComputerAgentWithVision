@@ -17,6 +17,7 @@ chroma-hnswlib==0.7.3
 chromadb==0.4.20
 click==8.1.7
 coloredlogs==15.0.1
+colorama
 contourpy==1.2.0
 cv
 cycler==0.12.1

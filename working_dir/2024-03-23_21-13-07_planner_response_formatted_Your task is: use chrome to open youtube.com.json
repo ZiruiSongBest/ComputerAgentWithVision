@@ -1,0 +1,8 @@
+{
+    "open_chrome_and_navigate_to_youtube": {
+        "name": "open_chrome_and_navigate_to_youtube",
+        "description": "Execute a system command to open Google Chrome on macOS and navigate to youtube.com.",
+        "dependencies": [],
+        "type": "Code"
+    }
+}

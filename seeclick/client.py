@@ -32,11 +32,12 @@ def annotate(image_source: np.ndarray, boxes: torch.Tensor, draw_point: bool = F
 
 
 img_path = '/Users/dylan/Downloads/Snipaste_2024-03-06_15-19-25.png'
+prompt = "In this UI screenshot, what is the position of the element corresponding to the command \"{}\" (with point)?"
 ref = 'play button'
 
 url = 'http://100.119.14.85:8998/upload'
 files = {'image': open(img_path, 'rb')}
-data = {'text': ref}
+data = {'text': prompt.format(ref)}
 
 response = requests.post(url, files=files, data=data).json()
 print(response['dot_location'])
