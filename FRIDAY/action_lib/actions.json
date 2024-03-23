@@ -1,1 +1,6 @@
-{}
+{
+    "open_chrome": {
+        "code": "\nfrom friday.action.base_action import BaseAction\nimport subprocess\n\nclass open_chrome(BaseAction):\n    def __init__(self):\n        self._description = \"Execute a system command to open Google Chrome on macOS.\"\n\n    def __call__(self, *args, **kwargs):\n        \"\"\"\n        Executes the system command to open Google Chrome on macOS.\n\n        Args:\n            *args: Variable length argument list.\n            **kwargs: Arbitrary keyword arguments.\n\n        Returns:\n            None, but prints a message confirming the execution of the command.\n        \"\"\"\n        try:\n            subprocess.run(['open', '-a', 'Google Chrome'], check=True)\n            print(\"Google Chrome has been successfully opened.\")\n        except subprocess.CalledProcessError as e:\n            print(f\"Failed to open Google Chrome: {e}\")\n\n# Example of how to use the class (Do not directly copy this line into your code):\n# open_chrome()()\n",
+        "description": "Execute a system command to open Google Chrome on macOS."
+    }
+}

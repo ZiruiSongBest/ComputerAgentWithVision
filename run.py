@@ -18,16 +18,13 @@ def main():
     parser = argparse.ArgumentParser(description='Inputs')
     parser.add_argument('--action_lib_path', type=str, default='friday/action_lib', help='tool repo path')
     parser.add_argument('--config_path', type=str, default='.env', help='openAI config file path')
-    parser.add_argument('--query', type=str, help='Enter your task or simply press enter to execute the fallback task: "Move the text files containing the word \'agent\' from the folder named \'document\' to the path \'working_dir/agent\'"')
+    parser.add_argument('--query', type=str, default="open chrome", help='Enter your task or simply press enter to execute the fallback task: "Move the text files containing the word \'agent\' from the folder named \'document\' to the path \'working_dir/agent\'"')
     parser.add_argument('--query_file_path', type=str, default='', help='Enter the path of the files for your task or leave empty if not applicable')
     parser.add_argument('--logging_filedir', type=str, default='log', help='log path')
     parser.add_argument('--logging_filename', type=str, default='temp.log', help='log file name')
     parser.add_argument('--logging_prefix', type=str, default=random_string(16), help='log file prefix')
     parser.add_argument('--score', type=int, default=4, help='critic score > score => store the tool')
     args = parser.parse_args()
-
-    if args.query is None:
-        args.query = "Move the text files containing the word 'agent' from the folder named 'document' to the path 'working_dir/agent'"
 
     if not os.path.exists(args.logging_filedir):
         os.mkdir(args.logging_filedir)
@@ -50,11 +47,11 @@ def main():
     print('Task:\n'+task)
     logging.info(task)
 
-    # relevant action 
+    # relevant action
     retrieve_action_name = retrieve_agent.retrieve_action_name(task)
     retrieve_action_description_pair = retrieve_agent.retrieve_action_description_pair(retrieve_action_name)
 
-    # decompose task
+    # task planner
     planning_agent.decompose_task(task, retrieve_action_description_pair)
 
     # iter each subtask

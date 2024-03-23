@@ -218,6 +218,7 @@ class PlanningModule(BaseAgent):
             {"role": "system", "content": sys_prompt},
             {"role": "user", "content": user_prompt},
         ]
+        json.dumps(self.message)
         return self.llm.chat(self.message)
       
     def task_replan_format_message(self, reasoning, current_task, current_task_description, action_list, files_and_folders):
