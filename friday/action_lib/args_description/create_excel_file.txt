@@ -1,0 +1,10 @@
+Creates a new Excel file in the specified directory with the given file name.
+
+        Args:
+            directory (str): The directory where the Excel file will be created.
+            file_name (str): The name of the Excel file to be created, including the .xlsx extension.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            None, but prints a message confirming the creation of the Excel file.

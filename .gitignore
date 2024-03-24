@@ -1,4 +1,5 @@
 GroundingDINO/weights/
+working_dir/
 
 # General
 .DS_Store

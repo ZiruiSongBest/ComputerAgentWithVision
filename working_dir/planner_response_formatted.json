@@ -1,4 +1,0 @@
-{'open_chrome_and_navigate': {'name': 'open_chrome_and_navigate', 'description': 'Execute a system command to open Google Chrome on macOS and navigate to youtube.com. The command can be structured as \'open -a "Google Chrome""http://youtube.com"\'.', 'dependencies': [...
-        ], 'type': 'Code'
-    }
-}
