@@ -1,8 +1,0 @@
-# Ignore Jupyter Notebook checkpoints
-.ipynb_checkpoints
-/test/*
-/test/*.ipynb
-/logs/*
-__pycache__/
-**/__pycache__/
-*.pyc
