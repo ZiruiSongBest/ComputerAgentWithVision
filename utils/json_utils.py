@@ -31,10 +31,13 @@ def json_append(json_data, new_key, new_value, prepend=True):
     return json_data
 
 
-def save_json(json_dict, file_name, file_path=os.path.join(file_utils.get_project_root(), 'working_dir'), indent=-1, date=True):
+def save_json(json_dict, file_name, file_path=os.path.join(file_utils.get_project_root(), 'working_dir/log_json/'), indent=-1, date=True):
     if date:
         file_name = f"{now.strftime('%Y-%m-%d_%H-%M-%S')}_{file_name}"
     file_path = os.path.join(file_path, file_name)
+    
+    if not os.path.exists(os.path.dirname(file_path)):
+        os.makedirs(os.path.dirname(file_path))
     
     with open(file_path, mode='w', encoding='utf8') as fp:
         if indent == -1:

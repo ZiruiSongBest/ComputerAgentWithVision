@@ -1,7 +1,9 @@
 import logging
 import os
 import sys
-from colorama import Fore, Back, Style
+from colorama import Fore, Back, Style, init
+
+init(autoreset=True)  # Initializes colorama to auto-reset the color codes after each print
 
 class ColorFormatter(logging.Formatter):
     COLORS = {
@@ -15,11 +17,19 @@ class ColorFormatter(logging.Formatter):
     def format(self, record):
         color = self.COLORS.get(record.levelname, "")
         record.msg = f"{color}{str(record.msg)}{Style.RESET_ALL}"
-        if color:
-            record.msg = color + record.msg + Style.RESET_ALL
         return super().format(record)
 
 class Logger:
+    COLOR_MAP = {
+        "red": Fore.RED,
+        "green": Fore.GREEN,
+        "yellow": Fore.YELLOW,
+        "black": Fore.BLACK,
+        "gray": Fore.LIGHTBLACK_EX,
+        "white": Fore.WHITE,
+        "blue": Fore.BLUE,
+    }
+
     def __init__(self, log_dir='log', log_filename='default.log', log_prefix=None, level=logging.INFO):
         self.log_dir = log_dir
         self.log_filename = log_filename
@@ -56,13 +66,23 @@ class Logger:
         logger.addHandler(console_handler)
         self.logger = logger
 
-    def log(self, message, level=logging.INFO, title="", title_color=Fore.WHITE):
+    def log(self, message, level=logging.INFO, title="", color="white"):
+        color_code = self.COLOR_MAP.get(color, Fore.WHITE)
         if title:
-            message = f"{title_color}{title}: {message}{Style.RESET_ALL}"
+            message = f"{color_code}{title}: {message}{Style.RESET_ALL}"
         self.logger.log(level, message)
 
-    def critical(self, message, title=""): self.log(message, logging.CRITICAL, title)
-    def error(self, message, title=""): self.log(message, logging.ERROR, title)
-    def warn(self, message, title=""): self.log(message, logging.WARNING, title, Fore.YELLOW)
-    def info(self, message, title=""): self.log(message, logging.INFO, title)
-    def debug(self, message, title=""): self.log(message, logging.DEBUG, title, Fore.GREEN)
+    def critical(self, message, title="", color="red"):
+        self.log(message, logging.CRITICAL, title, color)
+
+    def error(self, message, title="", color="red"):
+        self.log(message, logging.ERROR, title, color)
+
+    def warn(self, message, title="", color="yellow"):
+        self.log(message, logging.WARNING, title, color)
+
+    def info(self, message, title="", color="white"):
+        self.log(message, logging.INFO, title, color)
+
+    def debug(self, message, title="", color="green"):
+        self.log(message, logging.DEBUG, title, color)

@@ -15,7 +15,7 @@ class FridayExecutor:
             result = self.execute_agent.question_and_answer_action(pre_tasks_info, task, task)
         else:
             result = self.execute_agent.question_and_answer_action(pre_tasks_info, task, description)
-        self.logging.info(result)
+        self.logging.info(result, title='QA Result', color='green')
 
     def retrieve_existing_action(self, description):
         retrieve_name = self.retrieve_agent.retrieve_action_name(description, 3)
@@ -31,17 +31,27 @@ class FridayExecutor:
         }
         if state.error is not None:
             self.logging.error(state.error)
-        else:
-            self.logging.info(state)
-        self.logging.info(f"The subtask result is: {json.dumps(output)}")
+        # else:
+        #     self.logging.info(state, title='Execution Result', color='green')
+        self.logging.info(f"The subtask result is: {json.dumps(output, indent=4)}", title='Execution Result', color='grey')
         return state
+    
+    def plan_task(self, task):
+        self.logging.info(task, title='Task', color='green')
+        # relevant action
+        retrieve_action_name = self.retrieve_agent.retrieve_action_name(task)
+        retrieve_action_description_pair = self.retrieve_agent.retrieve_action_description_pair(retrieve_action_name)
+
+        # task planner
+        self.planning_agent.decompose_task(task, retrieve_action_description_pair)
+    
 
     def execute_task(self, task):
         self.logging.debug("The current task is: {task}".format(task=task))
         action = self.planning_agent.execute_list[0]
         action_node = self.planning_agent.action_node[action]
         description = action_node.description
-        self.logging.info("The current subtask is: {subtask}".format(subtask=description))
+        self.logging.info("The current subtask is: {subtask}".format(subtask=description), title='Current Subtask', color='green')
         code = ''
         # The return value of the current task
         result = ''
@@ -53,6 +63,7 @@ class FridayExecutor:
         if type == 'QA':
             self.handle_qa_type(pre_tasks_info, task, description)
         else:
+            invoke = ''
             if type == 'API':
                 api_path = self.execute_agent.extract_API_Path(description)
                 code = self.execute_agent.api_action(description, api_path, pre_tasks_info)

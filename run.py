@@ -1,8 +1,6 @@
 import os
 import argparse
 from utils.logger import Logger
-import json
-from datasets import load_dataset
 from friday.agent.friday_agent import FridayAgent
 from friday.core.executor import FridayExecutor
 import dotenv
@@ -24,26 +22,18 @@ def main():
 
     logging = Logger(log_dir=args.logging_filedir, log_filename=args.logging_filename, log_prefix=args.logging_prefix)
 
-    friday_agent = FridayAgent(config_path=args.config_path, action_lib_dir=args.action_lib_path)
+    friday_agent = FridayAgent(config_path=args.config_path, action_lib_dir=args.action_lib_path, logger=logging)
     planning_agent = friday_agent.planner
     retrieve_agent = friday_agent.retriever
     execute_agent = friday_agent.executor
+    
+    executor = FridayExecutor(planning_agent, execute_agent, retrieve_agent, logging, args.score)
 
     task = 'Your task is: {0}'.format(args.query)
     if args.query_file_path != '':
         task = task + '\nThe path of the files you need to use: {0}'.format(args.query_file_path)
-
-    print('Task:\n'+task)
-    logging.info(task)
-
-    # relevant action
-    retrieve_action_name = retrieve_agent.retrieve_action_name(task)
-    retrieve_action_description_pair = retrieve_agent.retrieve_action_description_pair(retrieve_action_name)
-
-    # task planner
-    planning_agent.decompose_task(task, retrieve_action_description_pair)
     
-    executor = FridayExecutor(planning_agent, execute_agent, retrieve_agent, logging, args.score)
+    executor.plan_task(task)
 
     # iter each subtask
     while planning_agent.execute_list:
@@ -57,4 +47,3 @@ def main():
 if __name__ == '__main__':
     dotenv.load_dotenv()
     main()
-
