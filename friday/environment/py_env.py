@@ -43,7 +43,8 @@ class PythonEnv(Env):
                 env["PYTHONPATH"] = os.getcwd()
             else:
                 python_executable = subprocess.run(["which", "python"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True).stdout.strip()
-                env = {"PYTHONPATH": os.getcwd()}
+                env = os.environ.copy()
+                env["PYTHONPATH"] = os.getcwd()
 
             # Run the Python script
             results = subprocess.run(

@@ -1,0 +1,7 @@
+Analyzes the extracted text content from a PDF to identify applicants, their qualifications, and those missing only a single qualification.
+
+        Args:
+            extracted_text (str): The text content extracted from the PDF file.
+
+        Returns:
+            list: A list of applicants missing only a single qualification.

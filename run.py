@@ -47,8 +47,8 @@ def main():
 
     # iter each subtask
     while planning_agent.execute_list:
-        type = planning_agent.execute_list[0]['type']
-        if type == 'image':
+        type = planning_agent.action_node[planning_agent.execute_list[0]].type
+        if type == 'Image':
             print('Image task')
             
         if executor.execute_task(task) == False:

@@ -1,0 +1,1 @@
+Analyze the extracted text content to identify applicants and their qualifications, and determine which applicants are missing a single qualification.

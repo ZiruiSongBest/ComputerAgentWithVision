@@ -12,6 +12,7 @@ import re
 import json
 import logging
 import os
+import copy
 from pathlib import Path
 
 class FridayAgent(BaseAgent):
@@ -163,11 +164,13 @@ class PlanningModule(BaseAgent):
         files_and_folders = self.environment.list_working_dir()
         action_description_pair = json.dumps(action_description_pair)
         response = self.task_decompose_format_message(task, action_description_pair, files_and_folders)
-        json_utils.save_json(response, f'planner_response_{task}.json', indent=4)
+
+        json_utils.save_json(json_utils.json_append(copy.deepcopy(response), 'task', task), f'planner_response.json', indent=4)
         
         logging.info(f"The overall response is: {response}")
         decompose_json = self.extract_json_from_string(response)
-        json_utils.save_json(decompose_json, f'planner_response_formatted_{task}.json', indent=4)
+        
+        json_utils.save_json(json_utils.json_append(copy.deepcopy(decompose_json), 'task', task), f'planner_response_formatted.json', indent=4)
         
         # Building action graph and topological ordering of actions
         self.create_action_graph(decompose_json)
@@ -224,8 +227,8 @@ class PlanningModule(BaseAgent):
             {"role": "system", "content": sys_prompt},
             {"role": "user", "content": user_prompt},
         ]
-
-        json_utils.save_json(self.message, f'planner_plan_{task}.json', indent=4)   
+        
+        json_utils.save_json(json_utils.json_append(copy.deepcopy(self.message), 'task', task), f'planner_plan.json', indent=4)   
         return self.llm.chat(self.message)
       
     def task_replan_format_message(self, reasoning, current_task, current_task_description, action_list, files_and_folders):

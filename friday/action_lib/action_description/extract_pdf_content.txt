@@ -1,0 +1,1 @@
+Extract the text content from the PDF file for further analysis.

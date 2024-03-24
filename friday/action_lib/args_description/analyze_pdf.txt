@@ -1,0 +1,8 @@
+Analyzes the content of a PDF file to identify applicants and their qualifications.
+
+        Args:
+            pdf_file_path (str): The path to the PDF file to be analyzed.
+            working_dir (str, optional): The working directory where the PDF file is located. If not provided, uses the current working directory.
+
+        Returns:
+            None, but prints the applicants and their qualifications found in the PDF file.

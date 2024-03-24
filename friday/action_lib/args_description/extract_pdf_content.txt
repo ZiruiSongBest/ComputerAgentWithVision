@@ -1,0 +1,8 @@
+Extracts the text content from a specified PDF file located at a given path.
+
+        Args:
+            pdf_file_path (str): The path to the PDF file from which to extract text.
+            working_dir (str, optional): The working directory where the PDF file is located. If not provided, uses the current working directory.
+
+        Returns:
+            str: The extracted text content from the PDF file.

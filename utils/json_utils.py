@@ -15,6 +15,21 @@ def load_json(file_path):
         json_dict = json.load(fp)
         return json_dict
 
+def json_append(json_data, new_key, new_value, prepend=True):
+    new_dict = {new_key: new_value}
+    if isinstance(json_data, list):
+        # If we want to prepend and the list contains dictionaries or is empty
+        if prepend or not json_data:
+            json_data.insert(0, new_dict)
+        # If we don't want to prepend, we append to the list
+        else:
+            json_data.append(new_dict)
+    # If the data is not a list, we need to create a list to hold the new and existing data
+    else:
+        json_data = [new_dict, json_data] if prepend else [json_data, new_dict]
+
+    return json_data
+
 
 def save_json(json_dict, file_name, file_path=os.path.join(file_utils.get_project_root(), 'working_dir'), indent=-1, date=True):
     if date:

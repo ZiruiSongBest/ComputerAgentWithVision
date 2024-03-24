@@ -24,15 +24,20 @@ class FridayExecutor:
 
     def handle_execution(self, code, invoke, type):
         state = self.execute_agent.execute_action(code, invoke, type)
-        self.logging.info(state)
+        
         output = {
             "result": state.result,
             "error": state.error
         }
+        if state.error is not None:
+            self.logging.error(state.error)
+        else:
+            self.logging.info(state)
         self.logging.info(f"The subtask result is: {json.dumps(output)}")
         return state
 
     def execute_task(self, task):
+        self.logging.debug("The current task is: {task}".format(task=task))
         action = self.planning_agent.execute_list[0]
         action_node = self.planning_agent.action_node[action]
         description = action_node.description
@@ -43,6 +48,7 @@ class FridayExecutor:
         next_action = action_node.next_action
         type = action_node.type
         pre_tasks_info = self.planning_agent.get_pre_tasks_info(action)
+        relevant_code = {}
         
         if type == 'QA':
             self.handle_qa_type(pre_tasks_info, task, description)
@@ -51,10 +57,10 @@ class FridayExecutor:
                 api_path = self.execute_agent.extract_API_Path(description)
                 code = self.execute_agent.api_action(description, api_path, pre_tasks_info)
             elif type == 'Code':
-                relevant_code = {}
                 relevant_code = self.retrieve_existing_action(description)
                 code, invoke = self.execute_agent.generate_action(action, description, pre_tasks_info, relevant_code)
             state = self.handle_execution(code, invoke, type)
+            result = state.result
             
             if type == 'Code':
                 need_amend = False
@@ -80,8 +86,8 @@ class FridayExecutor:
                     print(f"current amend times: {trial_times}")
                     new_code, invoke = self.execute_agent.amend_action(code, description, state, critique, pre_tasks_info)
                     code = new_code
-                    state = self.execute_agent.execute_action(code, invoke, type)
-                    self.log_state(state)
+                    state = self.handle_execution(code, invoke, type)
+                    result = state.result
 
                     if state.error is None:
                         critique, judge, score = self.execute_agent.judge_action(code, description, state, next_action)
