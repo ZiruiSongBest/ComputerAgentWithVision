@@ -3,7 +3,7 @@ from Cradle.provider import OpenAIProvider
 
 def analyze_image_with_prompts(image_path, prompts):
     # Initialize the LLM provider
-    llm_provider_config_path = "./Vision/config/openai_config.json"
+    llm_provider_config_path = "./vision/config/openai_config.json"
     llm_provider = OpenAIProvider()
     llm_provider.init_provider(llm_provider_config_path)
 

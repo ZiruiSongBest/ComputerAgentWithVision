@@ -36,6 +36,8 @@ class Logger:
         self.log_prefix = log_prefix if log_prefix else self.random_string(16)
         self.level = level
         self.setup_logger()
+        if not os.path.exists(self.log_dir):
+            os.makedirs(self.log_dir)
 
     @staticmethod
     def random_string(length):

@@ -3,6 +3,7 @@ import argparse
 from utils.logger import Logger
 from friday.agent.friday_agent import FridayAgent
 from friday.core.executor import FridayExecutor
+
 import dotenv
 
 def main():
@@ -13,21 +14,14 @@ def main():
     parser.add_argument('--query_file_path', type=str, default='', help='Enter the path of the files for your task or leave empty if not applicable')
     parser.add_argument('--logging_filedir', type=str, default='log', help='log path')
     parser.add_argument('--logging_filename', type=str, default='temp.log', help='log file name')
-    parser.add_argument('--logging_prefix', type=str, default=Logger.random_string(16), help='log file prefix')
-    parser.add_argument('--score', type=int, default=4, help='critic score > score => store the tool')
+    parser.add_argument('--logging_prefix', type=str, default=Logger.random_string(4), help='log file prefix')
+    parser.add_argument('--score', type=int, default=6, help='critic score > score => store the tool')
     args = parser.parse_args()
 
-    if not os.path.exists(args.logging_filedir):
-        os.mkdir(args.logging_filedir)
-
-    logging = Logger(log_dir=args.logging_filedir, log_filename=args.logging_filename, log_prefix=args.logging_prefix)
-
-    friday_agent = FridayAgent(config_path=args.config_path, action_lib_dir=args.action_lib_path, logger=logging)
+    friday_logging = Logger(log_dir=args.logging_filedir, log_filename=args.logging_filename, log_prefix=args.logging_prefix)
+    friday_agent = FridayAgent(config_path=args.config_path, action_lib_dir=args.action_lib_path, logger=friday_logging)
     planning_agent = friday_agent.planner
-    retrieve_agent = friday_agent.retriever
-    execute_agent = friday_agent.executor
-    
-    executor = FridayExecutor(planning_agent, execute_agent, retrieve_agent, logging, args.score)
+    executor = FridayExecutor(planning_agent, friday_agent.executor, friday_agent.retriever, friday_logging, args.score)
 
     task = 'Your task is: {0}'.format(args.query)
     if args.query_file_path != '':
