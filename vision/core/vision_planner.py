@@ -1,11 +1,12 @@
 import json
-import torch
+import re
 from typing import List, Dict, Union, Any
 from vision.llm.openai import OpenAIProvider
 from vision.grounding.seeclick import SeeClick
 from utils.encode_image import encode_data_to_base64_path, encode_single_data_to_base64
 from utils.screen_helper import ScreenHelper
 from utils.KEY_TOOL import IOEnvironment
+from utils.logger import Logger
 from vision.prompt.prompt import prompt
 from PIL import Image
 
@@ -16,15 +17,21 @@ from PIL import Image
 3. 生成task（定义task类）
 '''
 class VisionPlanner:
-    def __init__(self, template_file_path: str = None, llm_provider_config_path: str = "./vision/config/openai_config.json") -> None:
-        self.llm_provider: OpenAIProvider = OpenAIProvider()
-        self.llm_provider.init_provider(llm_provider_config_path)
+    def __init__(self, template_file_path: str = None, llm_provider: OpenAIProvider = None, seeclick: SeeClick = None, screen_helper: ScreenHelper = None, system_version: str = None, logger: Logger = None) -> None:
+        # Helpers
+        self.llm_provider = llm_provider
+        self.seeclick = seeclick
+        self.screen_helper = screen_helper
+        self.logger = logger
+        
+        # templates
         self.templates: Dict[str, str] = {}
-        self.screen_helper = ScreenHelper()
         self._init_templates(template_file_path)
-        self.key_tool = IOEnvironment()
-        self.seeclick = SeeClick()
+        
+        # variables
         self.messages: List[Dict[str, Any]] = []
+        self.system_version = system_version
+        self.vision_tasks = []
 
     def _init_templates(self, template_file_path) -> None:
         if template_file_path:
@@ -32,18 +39,56 @@ class VisionPlanner:
                 self.templates = json.load(f)
         else:
             self.templates = prompt
+    
     def init_system_messages(self, template_name: str) -> None:
         self.messages = [{
             "role": "system",
             "content": self.templates.get(template_name, "default")
         }]
     
-    def execute(self, task):
-        if task.type == "click":
-            location: torch.Tensor = self.seeclick.get_location(self.screen_helper.capture_screenshot(), task.target)
-            print(location.values)
-            self.key_tool.mouse_click(task.button, task.clicks, task.interval)
+    def plan_task(self, task: Dict[str, Any]) -> None:
+        '''
+            Get a task from Friday, and plan the vision task with vision planner
+        
+        Args:
+            param1 (dict): task from Friday
+        
+        Returns:
+            None
+        '''
+        response = self.task_decompose_format_message(task)
+        decomposed_tasks = self.extract_decomposed_tasks(response)
+        for task in decomposed_tasks:
+            self.vision_tasks.append(task)
+        
+        pass
+    
+    def decompose_task(self, task: Dict[str, Any]) -> None:
+        pass
+    
+    def update_action(self, action: Dict[str, Any]) -> None:
+        pass
+    
+    def task_decompose_format_message(self, task: Dict[str, Any]) -> List[Dict[str, Any]]:
+        '''
+            Send decompose task prompt to LLM and get task list.
+        '''
+        system_prompt = self.templates.get("plan_task", "default")
+        user_prompt = self.templates.get("plan_task_user_prompt", "default")
+        
+        
+        # add other essential information
+        
+        # create self.messages
+        
+        # return self.llm_provider.create_completion(self.messages)
 
+    def task_replan_format_message(self, task: Dict[str, Any]) -> List[Dict[str, Any]]:
+        pass
+    
+    def get_pre_tasks_info(self, task: Dict[str, Any]) -> List[Dict[str, Any]]:
+        pass
+    
     def seeclick_task_planner(self, image_input: Union[str, Image.Image, None] = None, template_name: str = "seeclick_preprocess"):
         self.init_system_messages(template_name)
         base64_image = []
@@ -81,6 +126,26 @@ class VisionPlanner:
         print(self.messages)
         return self.messages
         return self.llm_provider.create_completion(self.messages)
+    
+    def extract_decomposed_tasks(self, response) -> List[Dict[str, Any]]:
+        # Improved regular expression to find JSON data within a string
+        json_regex = r'```json\s*\n\{[\s\S]*?\n\}\s*```'
+        
+        # Search for JSON data in the text
+        matches = re.findall(json_regex, response)
+
+        # Extract and parse the JSON data if found
+        if matches:
+            # Removing the ```json and ``` from the match to parse it as JSON
+            json_data = matches[0].replace('```json', '').replace('```', '').strip()
+            try:
+                # Parse the JSON data
+                parsed_json = json.loads(json_data)
+                return parsed_json
+            except json.JSONDecodeError as e:
+                return f"Error parsing JSON data: {e}"
+        else:
+            return "No JSON data found in the string."
 
     def assemble_prompt(self, template_name: str, message_prompt: str, image_path: Union[str, List[str]]) -> str:
         if template_name not in self.templates:

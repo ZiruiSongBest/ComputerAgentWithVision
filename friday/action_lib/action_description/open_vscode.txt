@@ -1,0 +1,1 @@
+Execute a system command to open VSCode at a specified path.
