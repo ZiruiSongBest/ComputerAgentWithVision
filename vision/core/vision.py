@@ -19,11 +19,10 @@ from utils.logger import Logger
 '''
 Vision Task Categories:
 1. click
-2. click_and_enter
+2. enter
 3. scroll (Move and Scroll?)
 4. keyboard
-5. observation
-6. OCR
+# 5. observation
 '''
 class Vision:
     def __init__(self, llm_provider_config_path: str = "./vision/config/openai_config.json", logger: Logger = None) -> None:

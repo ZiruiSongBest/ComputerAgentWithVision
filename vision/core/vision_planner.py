@@ -1,5 +1,6 @@
 import json
 import re
+from friday.core.action_node import ActionNode
 from typing import List, Dict, Union, Any
 from vision.llm.openai import OpenAIProvider
 from vision.grounding.seeclick import SeeClick
@@ -30,7 +31,8 @@ class VisionPlanner:
         # variables
         self.messages: List[Dict[str, Any]] = []
         self.system_version = system_version
-        self.vision_tasks = []
+        self.vision_tasks = [] # list of task names
+        self.vision_nodes = {} # dict of task name: ActionNode
 
     def _init_templates(self, template_file_path) -> None:
         if template_file_path:
@@ -57,10 +59,31 @@ class VisionPlanner:
         '''
         response = self.task_decompose_format_message(task)
         decomposed_tasks = self.extract_decomposed_tasks(response)
-        for task in decomposed_tasks:
-            self.vision_tasks.append(task)
         
-        pass
+        for _, task_info in decomposed_tasks.items():
+            self.action_num += 1
+            task_name = task_info['name']
+            task_description = task_info['description']
+            task_type = task_info['type']
+            # task_dependencies = task_info['dependencies']
+            self.vision_tasks.append(task_name)
+            self.vision_nodes[task_name] = ActionNode(task_name, task_description, task_type)
+    
+    def get_pre_tasks_info(self, current_task): # 传入的是action
+        """
+        Get string information of the prerequisite task for the current task.
+        """
+        pre_tasks_info = {}
+        for task in self.vision_tasks:
+            if task == current_task:
+                break
+            task_info = {
+                "description" : self.vision_nodes[task].description,
+                "return_val" : self.vision_nodes[task].return_val
+            }
+            pre_tasks_info[task] = task_info
+        pre_tasks_info = json.dumps(pre_tasks_info)
+        return pre_tasks_info
     
     def decompose_task(self, task: Dict[str, Any]) -> None:
         pass

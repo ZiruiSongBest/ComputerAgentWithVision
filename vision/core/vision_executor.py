@@ -50,7 +50,6 @@ class Vision_Executor:
             self.templates = prompt
     
     
-    
     def measure_execution(self, task, images) -> str:
         """measure
 
@@ -60,8 +59,31 @@ class Vision_Executor:
 
         Returns:
             [bool, str]: the response of the result. If the task is completed, return True, else return False and the reason
-        """        
-        pass
+        """
+        self.messages.append({
+            "role": "user",
+            "content": [{
+                "type": "text",
+                "text": prompt["Judge"] + task
+            }, {
+                "type": "image_url",
+                "image_url": {
+                    "url": images[0]
+                },
+                "description" : "The image before operation"
+            }, {
+                "type": "image_url",
+                "image_url": {
+                    "url": images[1]
+                },
+                "description" : "The image after operation"
+            }]
+        })
+        [message,info] = self.llm_provider.create_completion(self.messages)
+        if message == "FINISH":
+            return [True, None]
+        else:
+            return [False, message]
 
     def execute(self, task):
         self.logging.debug("The current task is: {task}".format(task=task.description))
