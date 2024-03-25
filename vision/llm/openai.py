@@ -10,16 +10,11 @@ from typing import (
     Tuple,
     Union,
 )
-import json
-import re
-import io
 import asyncio
 
 import backoff
 import tiktoken
 import numpy as np
-import cv2
-from PIL import Image
 from openai import OpenAI, APIError, RateLimitError, APITimeoutError
 
 from vision.llm.base_llm import LLMProvider
@@ -36,6 +31,7 @@ MAX_TOKENS = {
     "gpt-3.5-turbo-0301": 4097,
     "gpt-3.5-turbo-0613": 4097,
     "gpt-3.5-turbo-16k-0613": 16385,
+    "gpt-4-vision-preview": 4097,
 }
 
 PROVIDER_SETTING_KEY_VAR = "key_var"
@@ -70,6 +66,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             None
         """
         self.retries = 5
+        self.cost = 0.0
 
 
     def init_provider(self, provider_cfg ) -> None:
@@ -307,6 +304,11 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                 logger.double_check()
 
             message = response.choices[0].message.content
+            
+            # usage = response.get("usage", {})
+            # prompt_tokens = usage.get("prompt_tokens", 0)
+            # completion_tokens = usage.get("completion_tokens", 0)
+            # self.cost += prompt_tokens / 1000 * 0.01 + completion_tokens / 1000 * 0.03
 
             info = {
                 "prompt_tokens" : response.usage.prompt_tokens,
@@ -444,246 +446,17 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
 
         return num_tokens
-        return self.provider_cfg[PROVIDER_SETTING_DEPLOYMENT_MAP][model_label]
-
-        """
-        A tripartite prompt is a message with the following structure:
-        <system message>
-
-        <user message part 1 before image introduction>
-        <image introduction>
-        <user message part 2 after image introduction>
-        """
-        pattern = re.compile(r"(.+?)(?=\n\n|$)", re.DOTALL)
-
-        paragraphs = re.findall(pattern, template_str)
-
-        filtered_paragraphs = [p for p in paragraphs if p.strip() != '']
-
-        system_content = filtered_paragraphs[0]  # the system content defaults to the first paragraph of the template
-        system_message = {
-            "role": "system",
-            "content": [
-                {
-                    "type": "text",
-                    "text": f"{system_content}"
-                }
-            ]
-        }
-
-        # segmenting "paragraphs"
-        image_introduction_paragraph_index = None
-        image_introduction_paragraph = None
-        for i, paragraph in enumerate(filtered_paragraphs):
-            if constants.IMAGES_INPUT_TAG in paragraph:
-                image_introduction_paragraph_index = i
-                image_introduction_paragraph = paragraph
-                break
-
-        user_messages_part1_paragraphs = filtered_paragraphs[1:image_introduction_paragraph_index]
-        user_messages_part2_paragraphs = filtered_paragraphs[image_introduction_paragraph_index + 1:]
-
-        # assemble user messages part 1
-        user_messages_part1_contents = []
-        for paragraph in user_messages_part1_paragraphs:
-            search_placeholder_pattern = re.compile(r"<\$[^\$]+\$>")
-
-            placeholder = re.search(search_placeholder_pattern, paragraph)
-            if not placeholder:
-                user_messages_part1_contents.append(paragraph)
-            else:
-                placeholder = placeholder.group()
-                placeholder_name = placeholder.replace("<$", "").replace("$>", "")
-
-                paragraph_input = params.get(placeholder_name, None)
-                if paragraph_input is None or paragraph_input == "" or paragraph_input == []:
-                    continue
-                else:
-                    if isinstance(paragraph_input, str):
-                        paragraph_content = paragraph.replace(placeholder, paragraph_input)
-                        user_messages_part1_contents.append(paragraph_content)
-                    elif isinstance(paragraph_input, list):
-                        paragraph_content = paragraph.replace(placeholder, json.dumps(paragraph_input))
-                        user_messages_part1_contents.append(paragraph_content)
-                    else:
-                        raise ValueError(f"Unexpected input type: {type(paragraph_input)}")
-
-        user_messages_part1_content = "\n\n".join(user_messages_part1_contents)
-        user_messages_part1 = {
-            "role": "user",
-            "content": [
-                {
-                    "type": "text",
-                    "text": f"{user_messages_part1_content}"
-                }
-            ]
-        }
-
-        # assemble image introduction messages
-        image_introduction_messages = []
-        paragraph_input = params.get(constants.IMAGES_INPUT_TAG_NAME, None)
-
-        if paragraph_input is None or paragraph_input == "" or paragraph_input == []:
-            image_introduction_messages = []
-        else:
-            paragraph_content_pre = image_introduction_paragraph.replace(constants.IMAGES_INPUT_TAG, "")
-            message = {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": f"{paragraph_content_pre}"
-                    }
-                ]
-            }
-
-            image_introduction_messages.append(message)
-
-            for item in paragraph_input:
-                introduction = item.get(constants.IMAGE_INTRO_TAG_NAME, None)
-                path = item.get(constants.IMAGE_PATH_TAG_NAME, None)
-                assistant = item.get(constants.IMAGE_ASSISTANT_TAG_NAME, None)
-                resolution = item.get(constants.IMAGE_RESOLUTION_TAG_NAME, None)
-
-                if introduction is not None and introduction != "":
-                    message = {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": f"{introduction}"
-                            }
-                        ]
-                    }
-
-                    if path is not None and path != "":
-                        encoded_images = encode_data_to_base64_path(path)
-
-                        for encoded_image in encoded_images:
-                            msg_content = {
-                                    "type": "image_url",
-                                    "image_url":
-                                        {
-                                            "url": f"{encoded_image}"
-                                        }
-                                }
-
-                            if resolution is not None and resolution != "":
-                                msg_content["image_url"]["detail"] = resolution
-
-                            message["content"].append(msg_content)
-
-                    image_introduction_messages.append(message)
-
-                if assistant is not None and assistant != "":
-                    message = {
-                        "role": "assistant",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": f"{assistant}"
-                            }
-                        ]
-                    }
-                    image_introduction_messages.append(message)
-
-        # assemble user messages part 2
-        user_messages_part2_contents = []
-        for paragraph in user_messages_part2_paragraphs:
-            search_placeholder_pattern = re.compile(r"<\$[^\$]+\$>")
-
-            placeholder = re.search(search_placeholder_pattern, paragraph)
-            if not placeholder:
-                user_messages_part2_contents.append(paragraph)
-            else:
-                placeholder = placeholder.group()
-                placeholder_name = placeholder.replace("<$", "").replace("$>", "")
-
-                paragraph_input = params.get(placeholder_name, None)
-                if paragraph_input is None or paragraph_input == "" or paragraph_input == []:
-                    continue
-                else:
-                    if isinstance(paragraph_input, str):
-                        paragraph_content = paragraph.replace(placeholder, paragraph_input)
-                        user_messages_part2_contents.append(paragraph_content)
-                    elif isinstance(paragraph_input, list):
-                        paragraph_content = paragraph.replace(placeholder, json.dumps(paragraph_input))
-                        user_messages_part2_contents.append(paragraph_content)
-                    else:
-                        raise ValueError(f"Unexpected input type: {type(paragraph_input)}")
-
-        user_messages_part2_content = "\n\n".join(user_messages_part2_contents)
-        user_messages_part2 = {
-            "role": "user",
-            "content": [
-                {
-                    "type": "text",
-                    "text": f"{user_messages_part2_content}"
-                }
-            ]
-        }
-
-        return [system_message] + [user_messages_part1] + image_introduction_messages + [user_messages_part2]
-        raise NotImplementedError("This method is not implemented yet.")
-        if config.DEFAULT_MESSAGE_CONSTRUCTION_MODE == constants.MESSAGE_CONSTRUCTION_MODE_TRIPART:
-            return self.assemble_prompt_tripartite(template_str=template_str, params=params)
-        elif config.DEFAULT_MESSAGE_CONSTRUCTION_MODE == constants.MESSAGE_CONSTRUCTION_MODE_PARAGRAPH:
-            return self.assemble_prompt_paragraph(template_str=template_str, params=params)
 
 
-def encode_image_path(image_path):
-    with open(image_path, "rb") as image_file:
-        encoded_image = encode_image_binary(image_file.read(), image_path)
-        return encoded_image
-
-
-def encode_image_binary(image_binary, image_path=None):
-    encoded_image = encode_base64(image_binary)
-    # if image_path is None:
-    #     image_path = '<$bin_placeholder$>'
-
-    # logger.debug(f'|>. img_hash {hash_text_sha256(encoded_image)}, path {image_path} .<|')
-    return encoded_image
-
-
-def decode_image(base64_encoded_image):
-    return decode_base64(base64_encoded_image)
-
-
-def encode_data_to_base64_path(data: Any) -> List[str]:
-    encoded_images = []
-
-    if isinstance(data, (str, Image.Image, np.ndarray, bytes)):
-        data = [data]
-
-    for item in data:
-        if isinstance(item, str):
-            if os.path.exists(assemble_project_path(item)):
-                path = assemble_project_path(item)
-                encoded_image = encode_image_path(path)
-                image_type = path.split(".")[-1].lower()
-                encoded_image = f"data:image/{image_type};base64,{encoded_image}"
-                encoded_images.append(encoded_image)
-            else:
-                encoded_images.append(item)
-
-            continue
-
-        elif isinstance(item, bytes):  # mss grab bytes
-            image = Image.frombytes('RGB', item.size, item.bgra, 'raw', 'BGRX')
-            buffered = io.BytesIO()
-            image.save(buffered, format="JPEG")
-        elif isinstance(item, Image.Image):  # PIL image
-            buffered = io.BytesIO()
-            item.save(buffered, format="JPEG")
-        elif isinstance(item, np.ndarray):  # cv2 image array
-            item = cv2.cvtColor(item, cv2.COLOR_BGR2RGB)  # convert to RGB
-            image = Image.fromarray(item)
-            buffered = io.BytesIO()
-            image.save(buffered, format="JPEG")
-
-        encoded_image = encode_image_binary(buffered.getvalue())
-        encoded_image = f"data:image/jpeg;base64,{encoded_image}"
-        encoded_images.append(encoded_image)
-
-    return encoded_images
+# __init__: 初始化类实例。
+# init_provider: 使用提供的配置初始化提供者。
+# _parse_config: 解析提供的配置对象。
+# _emb_invocation_params: 获取嵌入调用的参数。
+# embed_with_retry: 使用重试机制进行嵌入调用。
+# _get_len_safe_embeddings: 获取长度安全的嵌入，处理超过模型最大长度的文本。
+# embed_documents: 嵌入多个文档文本。
+# embed_query: 嵌入单个查询文本。
+# get_embedding_dim: 获取嵌入维度。
+# create_completion: 创建一个完成任务。
+# create_completion_async: 异步创建一个完成任务。
+# num_tokens_from_messages: 从消息列表中计算令牌数。

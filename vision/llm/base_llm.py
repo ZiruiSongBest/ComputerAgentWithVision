@@ -38,8 +38,3 @@ class LLMProvider(abc.ABC):
     def init_provider(self, provider_cfg) -> None:
         """Initialize a provider via a json config."""
         pass
-
-    @abc.abstractmethod
-    def assemble_prompt(self, template_str: str = None, params: Dict[str, Any] = None) -> List[Dict[str, Any]]:
-        """Combine parametes in the appropriate way for the provider to use."""
-        pass

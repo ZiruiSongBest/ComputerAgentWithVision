@@ -1,4 +1,3 @@
-from collections import namedtuple
 import os
 import time
 from pathlib import Path
@@ -6,7 +5,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import pyautogui
 
-from utils import Singleton
+from utils.singleton import Singleton
 from utils.file_utils import assemble_project_path, get_project_root
 
 load_dotenv(verbose=True)
@@ -17,16 +16,11 @@ class Config(metaclass=Singleton):
     Configuration class.
     """
 
-    # DEFAULT_GAME_RESOLUTION = (1920, 1080)
-    # DEFAULT_GAME_SCREEN_RATIO = (16, 9)
-
     DEFAULT_TEMPERATURE = 1.0
     DEFAULT_SEED = None
 
     DEFAULT_FIXED_SEED_VALUE = 42
     DEFAULT_FIXED_TEMPERATURE_VALUE = 0.0
-
-    # DEFAULT_POST_ACTION_WAIT_TIME = 3 # Currently in use in multiple places with this value
 
     root_dir = '.'
     work_dir = './runs'
@@ -75,7 +69,6 @@ class Config(metaclass=Singleton):
             self._set_latest_memory_path()
 
         self._set_dirs()
-        self._set_game_window_info()
 
 
     def set_fixed_seed(self, is_fixed: bool = True, seed: int = DEFAULT_FIXED_SEED_VALUE, temperature: float = DEFAULT_FIXED_TEMPERATURE_VALUE) -> None:
