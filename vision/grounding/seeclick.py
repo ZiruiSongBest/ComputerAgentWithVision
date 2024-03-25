@@ -21,7 +21,7 @@ class SeeClick:
         location = response['dot_location']
         return torch.tensor([[float(coord) for coord in location.strip("()").split(",")]])
 
-    def annotate_image(self, image_source: np.ndarray, boxes: torch.Tensor, draw_point: bool = False, annotate_color: tuple = (0, 255, 0)) -> np.ndarray:
+    def annotate_image(self, image_source: np.ndarray, boxes: torch.Tensor, draw_point: bool = True, annotate_color: tuple = (255, 0, 0)) -> np.ndarray:
         if isinstance(image_source, str):
             image_source = cv2.imread(image_source)
 
