@@ -88,7 +88,7 @@ class FridayExecutor:
                         relevant_action_name = self.retrieve_agent.retrieve_action_name(reasoning)
                         relevant_action_description_pair = self.retrieve_agent.retrieve_action_description_pair(relevant_action_name)
                         self.planning_agent.replan_task(reasoning, action, relevant_action_description_pair)
-                        return
+                        return ['replan']
                     need_amend = True
                     
                 trial_times = 0
@@ -110,15 +110,11 @@ class FridayExecutor:
                 # If the task still cannot be completed, an error message will be reported.
                 if need_amend == True:
                     print("I can't Do this Task!!")
-                    return False
+                    return ['fail']
                 else: # The task is completed, if code is save the code, args_description, action_description in lib
                     if score >= self.score:
                         self.execute_agent.store_action(action, code)
-        
-        print("Current task execution completed!!!")  
-        self.planning_agent.update_action(action, result, relevant_code, True, type)
-        self.planning_agent.execute_list.remove(action)
-        return
+        return ['success', result, relevant_code]
 # Usage example
 # friday_executor = FridayExecutor(planning_agent, execute_agent, retrieve_agent)
 # friday_executor.execute_task(type, pre_tasks_info, task, description, action, next_action)

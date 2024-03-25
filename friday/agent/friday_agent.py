@@ -406,25 +406,6 @@ class ExecutionModule(BaseAgent):
         self.logging.info("************************</state>*************************")
         return state
 
-    # def execute_action(self, code, task_description, pre_tasks_info):
-    #     '''
-    #     Implement action execution logic.
-    #     instantiate the action class and execute it, and return the execution completed status.
-    #     '''
-    #     invoke_msg = self.invoke_generate_format_message(code, task_description, pre_tasks_info)
-    #     invoke = self.extract_information(invoke_msg, begin_str='<invoke>', end_str='</invoke>')[0]
-    #     # print result info
-    #     info = "\n" + '''print("<return>")''' + "\n" + "print(result)" +  "\n" + '''print("</return>")'''
-    #     code = code + '\nresult=' + invoke + info
-    #     print("************************<code>**************************")
-    #     print(code)
-    #     print("************************</code>*************************")  
-    #     state = self.environment.step(code)
-    #     print("************************<state>**************************")
-    #     print(state)
-    #     print("************************</state>*************************") 
-    #     return state
-
     def judge_action(self, code, task_description, state, next_action):
         '''
         Implement action judgment logic.
@@ -445,15 +426,6 @@ class ExecutionModule(BaseAgent):
         new_code = self.extract_python_code(amend_msg)
         invoke = self.extract_information(amend_msg, begin_str='<invoke>', end_str='</invoke>')[0]
         return new_code, invoke
-
-    # def amend_action(self, current_code, task_description, state, critique):
-    #     '''
-    #     Implement action repair logic.
-    #     repair unfinished tasks or erroneous code, and return the repaired code and call.
-    #     '''
-    #     amend_msg = self.skill_amend_format_message(current_code, task_description, state.error, state.result, state.pwd, state.ls, critique)
-    #     new_code = self.extract_python_code(amend_msg)
-    #     return new_code
 
     def analysis_action(self, code, task_description, state):
         '''

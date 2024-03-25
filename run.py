@@ -31,13 +31,22 @@ def main():
 
     # iter each subtask
     while planning_agent.execute_list:
+        action = planning_agent.execute_list[0]
         type = planning_agent.action_node[planning_agent.execute_list[0]].type
         if type == 'Image':
             print('Image task')
             
-        if executor.execute_task(task) == False:
+        return_val = executor.execute_task(task)
+        
+        if return_val[0] == 'fail':
             break
-
+        elif return_val[0] == 'replan':
+            continue
+        elif return_val[0] == 'success':
+            _, result, relevant_code = return_val
+            print("Current task execution completed!!!")  
+            planning_agent.update_action(action, result, relevant_code, True, type)
+            planning_agent.execute_list.remove(action)
 if __name__ == '__main__':
     dotenv.load_dotenv()
     main()
