@@ -11,6 +11,19 @@ class IOEnvironment():
     MOUSEEVENTF_MOVE = 0x0001 #鼠标移动事件标识
     MOUSEEVENTF_ABSOLUT = 0x8000 #绝对坐标
     WIN_NORM_MAX = 65536 # windows窗口的最大值
+    
+    def move_and_click(self, x, y, button='left', clicks=1, interval=0.0, duration=None):
+        """
+        移动鼠标到指定位置并点击。
+
+        参数:
+        - x, y: 鼠标移动到的位置的x, y坐标。
+        - button: 点击的按钮，可以是'left' 'middle' 'right'。
+        - clicks: 点击次数 默认为1。
+        - interval: 两次点击之间的间隔时间 单位为秒。
+        """
+        pyautogui.moveTo(x, y, duration=0.2)
+        pyautogui.click(clicks=clicks, interval=interval, button=button)
 
     def mouse_move(self, x, y):
         pyautogui.moveTo(x, y, duration=0.2)  # 同样，duration参数可使移动更平滑

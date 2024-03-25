@@ -18,11 +18,11 @@ from utils.logger import Logger
 
 '''
 Vision Task Categories:
-1. Click
-2. Click and Enter
-3. Scroll (Move and Scroll?)
-4. Keyboard
-5. Observations
+1. click
+2. click_and_enter
+3. scroll (Move and Scroll?)
+4. keyboard
+5. observation
 6. OCR
 '''
 class Vision:

@@ -13,8 +13,8 @@ from PIL import Image
 
 '''
 1. 访问llm
-2. 拼接图像，prompt
-3. 生成task（定义task类）
+2. 拼接图像, prompt
+3. 生成task(定义task类)
 '''
 class VisionPlanner:
     def __init__(self, template_file_path: str = None, llm_provider: OpenAIProvider = None, seeclick: SeeClick = None, screen_helper: ScreenHelper = None, system_version: str = None, logger: Logger = None) -> None:
