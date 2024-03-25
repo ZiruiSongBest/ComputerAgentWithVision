@@ -5,7 +5,6 @@ from vision.llm.openai import OpenAIProvider
 from vision.grounding.seeclick import SeeClick
 from utils.encode_image import encode_data_to_base64_path, encode_single_data_to_base64
 from utils.screen_helper import ScreenHelper
-from utils.KEY_TOOL import IOEnvironment
 from utils.logger import Logger
 from vision.prompt.prompt import prompt
 from PIL import Image

@@ -1,11 +1,12 @@
-from typing import List, Dict, Union, Any
+import json
+from typing import List, Dict, Any
 from vision.llm.openai import OpenAIProvider
 from vision.grounding.seeclick import SeeClick
 from utils.encode_image import encode_data_to_base64_path, encode_single_data_to_base64
 from utils.screen_helper import ScreenHelper
 from utils.KEY_TOOL import IOEnvironment
 from utils.logger import Logger
-
+from vision.prompt.prompt import prompt
 
 '''
 1. 读取task, 并且执行操作
@@ -40,6 +41,27 @@ class Vision_Executor:
         self.messages: List[Dict[str, Any]] = []
         self.system_version = system_version
         self.vision_tasks = []
+    
+    def _init_templates(self, template_file_path) -> None:
+        if template_file_path:
+            with open(template_file_path, 'r') as f:
+                self.templates = json.load(f)
+        else:
+            self.templates = prompt
+    
+    
+    
+    def measure_execution(self, task, images) -> str:
+        """measure
+
+        Args:
+            task (str): the task to be executed
+            images ([str]): two base64 images
+
+        Returns:
+            [bool, str]: the response of the result. If the task is completed, return True, else return False and the reason
+        """        
+        pass
 
     def execute(self, task):
         self.logging.debug("The current task is: {task}".format(task=task.description))
