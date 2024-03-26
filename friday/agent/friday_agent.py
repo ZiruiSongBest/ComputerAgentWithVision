@@ -59,8 +59,8 @@ class PlanningModule(BaseAgent):
         Implement task disassembly logic.
         """
         
-        # TESTCASE TEMP COMMENTED
-
+        # TESTING
+        '''
         files_and_folders = self.environment.list_working_dir()
         action_description_pair = json.dumps(action_description_pair)
         response = self.task_decompose_format_message(task, action_description_pair, files_and_folders)
@@ -72,10 +72,10 @@ class PlanningModule(BaseAgent):
         
         json_utils.save_json(json_utils.json_append(copy.deepcopy(decompose_json), 'task', task), f'planner_response_formatted.json', indent=4)
         self.logging.info(f"{decompose_json}", title='Decompose Task', color='gray')
-
+        '''
         
-        # with open('testcase/planner_response_formatted.json') as f:
-        #     decompose_json = json.load(f)
+        with open('testcase/planner_response_formatted.json') as f:
+            decompose_json = json.load(f)
         
         # Building action graph and topological ordering of actions
         self.create_action_graph(decompose_json)

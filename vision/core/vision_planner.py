@@ -63,12 +63,12 @@ class VisionPlanner:
         plan_task_message = self.task_decompose_format_message(pre_task_info, task_name, task_description)
         
         # TESTCASE TEMP COMMENTED
-        response = self.llm_provider.create_completion(plan_task_message, max_tokens=1000)
-        self.logger.info(response)
-        decomposed_tasks = self.extract_decomposed_tasks(response[0])
+        # response = self.llm_provider.create_completion(plan_task_message, max_tokens=1000)
+        # self.logger.info(response)
+        # decomposed_tasks = self.extract_decomposed_tasks(response[0])
         
-        # with open("testcase/decompose_task_message.json", "r") as f:
-        #     decomposed_tasks = json.load(f)
+        with open("testcase/decompose_task_message.json", "r") as f:
+            decomposed_tasks = json.load(f)
         
         for _, task_info in decomposed_tasks.items():
             self.action_num += 1
