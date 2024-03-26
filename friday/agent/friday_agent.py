@@ -58,6 +58,9 @@ class PlanningModule(BaseAgent):
         """
         Implement task disassembly logic.
         """
+        
+        # TESTCASE TEMP COMMENTED
+
         files_and_folders = self.environment.list_working_dir()
         action_description_pair = json.dumps(action_description_pair)
         response = self.task_decompose_format_message(task, action_description_pair, files_and_folders)
@@ -69,6 +72,10 @@ class PlanningModule(BaseAgent):
         
         json_utils.save_json(json_utils.json_append(copy.deepcopy(decompose_json), 'task', task), f'planner_response_formatted.json', indent=4)
         self.logging.info(f"{decompose_json}", title='Decompose Task', color='gray')
+
+        
+        # with open('testcase/planner_response_formatted.json') as f:
+        #     decompose_json = json.load(f)
         
         # Building action graph and topological ordering of actions
         self.create_action_graph(decompose_json)
@@ -79,10 +86,10 @@ class PlanningModule(BaseAgent):
         replan new task to origin action graph .
         """
         # current_task information
-        current_action = self.action_node[current_task]
-        current_task_description = current_action.description
-        relevant_action_description_pair = json.dumps(relevant_action_description_pair)
-        files_and_folders = self.environment.list_working_dir()
+        current_action = self.action_node[current_task] # action_node
+        current_task_description = current_action.description # description
+        relevant_action_description_pair = json.dumps(relevant_action_description_pair) # no need
+        files_and_folders = self.environment.list_working_dir() # current image
         response = self.task_replan_format_message(reasoning, current_task, current_task_description, relevant_action_description_pair, files_and_folders)
         new_action = self.extract_json_from_string(response)
         # add new action to action graph
@@ -126,7 +133,8 @@ class PlanningModule(BaseAgent):
             {"role": "user", "content": user_prompt},
         ]
         
-        json_utils.save_json(json_utils.json_append(copy.deepcopy(self.message), 'task', task), f'planner_plan.json', indent=4)   
+        json_utils.save_json(json_utils.json_append(copy.deepcopy(self.message), 'task', task), f'planner_plan.json', indent=4)
+        
         return self.llm.chat(self.message)
       
     def task_replan_format_message(self, reasoning, current_task, current_task_description, action_list, files_and_folders):
@@ -406,25 +414,6 @@ class ExecutionModule(BaseAgent):
         self.logging.info("************************</state>*************************")
         return state
 
-    # def execute_action(self, code, task_description, pre_tasks_info):
-    #     '''
-    #     Implement action execution logic.
-    #     instantiate the action class and execute it, and return the execution completed status.
-    #     '''
-    #     invoke_msg = self.invoke_generate_format_message(code, task_description, pre_tasks_info)
-    #     invoke = self.extract_information(invoke_msg, begin_str='<invoke>', end_str='</invoke>')[0]
-    #     # print result info
-    #     info = "\n" + '''print("<return>")''' + "\n" + "print(result)" +  "\n" + '''print("</return>")'''
-    #     code = code + '\nresult=' + invoke + info
-    #     print("************************<code>**************************")
-    #     print(code)
-    #     print("************************</code>*************************")  
-    #     state = self.environment.step(code)
-    #     print("************************<state>**************************")
-    #     print(state)
-    #     print("************************</state>*************************") 
-    #     return state
-
     def judge_action(self, code, task_description, state, next_action):
         '''
         Implement action judgment logic.
@@ -445,15 +434,6 @@ class ExecutionModule(BaseAgent):
         new_code = self.extract_python_code(amend_msg)
         invoke = self.extract_information(amend_msg, begin_str='<invoke>', end_str='</invoke>')[0]
         return new_code, invoke
-
-    # def amend_action(self, current_code, task_description, state, critique):
-    #     '''
-    #     Implement action repair logic.
-    #     repair unfinished tasks or erroneous code, and return the repaired code and call.
-    #     '''
-    #     amend_msg = self.skill_amend_format_message(current_code, task_description, state.error, state.result, state.pwd, state.ls, critique)
-    #     new_code = self.extract_python_code(amend_msg)
-    #     return new_code
 
     def analysis_action(self, code, task_description, state):
         '''

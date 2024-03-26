@@ -1,0 +1,1 @@
+Execute a system command to open Google Chrome on macOS.

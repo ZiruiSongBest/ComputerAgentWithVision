@@ -1,6 +1,7 @@
 GroundingDINO/weights/
 working_dir/
 working_history/
+screenshot.png
 
 # General
 .DS_Store

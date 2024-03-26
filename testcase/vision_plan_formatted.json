@@ -1,0 +1,30 @@
+{
+    "observe_current_screen": {
+        "name": "observe_current_screen",
+        "description": "check if the current browser tab is already on Google's main page",
+        "dependencies": [],
+        "type": "Observe",
+        "content": ""
+    },
+    "enter_google_url": {
+        "name": "enter_google_url",
+        "description": "enter Google's URL into the browser's address bar",
+        "dependencies": ["observe_current_screen"],
+        "type": "Enter",
+        "content": "https://www.google.com"
+    },
+    "press_enter_to_navigate": {
+        "name": "press_enter_to_navigate",
+        "description": "press Enter to navigate to Google's main page",
+        "dependencies": ["enter_google_url"],
+        "type": "Enter",
+        "content": "<Enter>"
+    },
+    "wait_for_google_page_load": {
+        "name": "wait_for_google_page_load",
+        "description": "wait for Google's main page to load completely",
+        "dependencies": ["press_enter_to_navigate"],
+        "type": "Observe",
+        "content": "Google home page fully loaded"
+    }
+}

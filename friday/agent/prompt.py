@@ -335,8 +335,8 @@ You are an expert in making plans.
 I will give you a task and ask you to decompose this task into a series of subtasks. Each subtask is an atomic operation. Through the execution of sorting of subtasks, I can complete the entire task.
 You should only respond with a reasoning process and a JSON result in the format as described below:
 1. Carry out step-by-step reasoning based on the given task until the task is completed. Each step of reasoning is decomposed into sub-tasks. For example, the current task is to reorganise the text files containing the word 'agent' in the folder called document into the folder called agent. Then the reasoning process is as follows: According to Current Working Directory and Files And Folders in Current Working Directory information, the folders document and agent exist, so firstly, retrieve the txt text in the folder call document in the working directory. If the text contains the word a"agent", save the path of the text file into the list, and return. Secondly, put the retrieved files into a folder named agent based on the file path list obtained by executing the previous task.
-2. There are five types of subtasks, the first is a task that requires the use of APIs to access internet resources to obtain information, such as retrieving information from the Internet, this type of task is called 'API subtask', and all available APIs are only listed in the API List. The second is a task that does not require the use of API tools but need to write code to complete, which is called 'Code subtask', 'Code subtask' usually only involves operating system or file operations. The third task is called "Image subtask", which copilot need observe the screenshot to finish the subtask. The fourth is a task that need a Large video model to understand the video, which is called "Video task".   The fifth is called 'QA subtask', It is no need to write code, call APIs, observe screenshots, or understand videos to complete the task, it will analyse the current subtask description and the return results of the predecessor tasks to get an appropriate answer.
-3. Each decomposed subtask has four attributes: name, task description, and dependencies. 'name' abstracts an appropriate name based on the reasoning process of the current subtask. 'description' is the process of the current subtask, and if the current task is related to a corresponding file operation, the path to the file needs to be written in the 'description'. 'dependencies' refers to the list of task names that the current task depends on based on the reasoning process. These tasks must be executed before the current task. 'type' indicates whether the current task is a Code task or a API task or a Vision task or a video task or a QA task, If it is a Code task, its value is 'Code', if it is a API task, its value is 'API', if it is a Image task, its value is "image", if it a video task, Its value is "Video", if it is a QA task, its value is 'QA'.
+2. There are five types of subtasks, the first is a task that requires the use of APIs to access internet resources to obtain information, such as retrieving information from the Internet, this type of task is called 'API subtask', and all available APIs are only listed in the API List. The second is a task that does not require the use of API tools but need to write code to complete, which is called 'Code subtask', 'Code subtask' usually only involves operating system or file operations. The third task is called "Vision subtask", which there's a vision module that can click, enter text, scroll screen, and read screen text to finish the subtask. The fourth is a task that need a Large video model to understand the video, which is called "Video task". The fifth is called 'QA subtask', It is no need to write code, call APIs, observe screenshots, or understand videos to complete the task, it will analyse the current subtask description and the return results of the predecessor tasks to get an appropriate answer.
+3. Each decomposed subtask has four attributes: name, task description, and dependencies. 'name' abstracts an appropriate name based on the reasoning process of the current subtask. 'description' is the process of the current subtask, and if the current task is related to a corresponding file operation, the path to the file needs to be written in the 'description'. 'dependencies' refers to the list of task names that the current task depends on based on the reasoning process. These tasks must be executed before the current task. 'type' indicates whether the current task is a Code task or a API task or a Vision task or a video task or a QA task, If it is a Code task, its value is 'Code', if it is a API task, its value is 'API', if it is a Vision task, its value is "Vision", if it a video task, Its value is "Video", if it is a QA task, its value is 'QA'.
 4. In JSON, each decomposed subtask contains four attributes: name, description, dependencies and type, which are obtained through reasoning about the task. The key of each subtask is the 'name' attribute of the subtask.
 5. Continuing with the example in 1, the format of the JSON data I want to get is as follows:
 ```json
@@ -368,7 +368,7 @@ You should only respond with a reasoning process and a JSON result in the format
     "name": "navigate_post_creation",
     "description": "Locate and click the button or link to create a new post.",
     "dependencies": ["open_platform"],
-    "type": "Image"
+    "type": "Vision"
   },
   "upload_picture": {
     "name": "upload_picture",
@@ -386,7 +386,7 @@ You should only respond with a reasoning process and a JSON result in the format
     "name": "post",
     "description": "Click the post button to publish the picture and caption.",
     "dependencies": ["add_caption"],
-    "type": "Image"
+    "type": "Vision"
   }
 }
 
@@ -409,6 +409,34 @@ You should only respond with a reasoning process and a JSON result in the format
   }
 }
 ```
+```json
+
+{
+  "open_system_preferences": {
+      "name": "open_system_preferences",
+      "description": "Execute a system command or script to open System Preferences on macOS.",
+      "dependencies": [],
+      "type": "Code"
+  },
+  "navigate_to_Appearance_settings": {
+      "name": "navigate_to_Appearance_settings",
+      "description": "Click the Appearance pane in the system settings",
+      "dependencies": [
+          "open_system_preferences"
+      ],
+      "type": "Vision"
+  },
+  "change_appearance_to_dark_mode": {
+      "name": "change_appearance_to_dark_mode",
+      "description": "Click the dark in the Appearance settings",
+      "dependencies": [
+          "navigate_to_Appearance_settings"
+      ],
+      "type": "Code"
+  }
+}
+
+```
 
 And you should also follow the following criteria:
 1. A task can be decomposed down into one or more subtasks, depending on the complexity of the task.
@@ -428,21 +456,21 @@ And you should also follow the following criteria:
 16. Please note that QA subtasks will not be generated continuously, that is, there will be no dependency between any two QA subtasks.
 17. A QA subtask can perform comprehension analysis task, such as content conversion and format transformation, information summarisation or analysis, answering academic questions, language translation, creative writing, logical reasoning based on existing information, and providing daily life advice and guidance, etc.
 18. If the task involves file or operating system operations, such as file reading and writing, downloading, moving, then decompose the Code subtask. If the task requires the use of APIs to access internet resources to obtain information, such as web page retrieval, obtaining web page text content, etc., then decompose the API subtask. QA subtasks usually use the results of reading files from the Code task and the content returned by the API task to help complete intermediate steps or give the final answer to the task.
-19. If the task involves operating keyboard and mouse input, such as click the search button, and click the first video, and type some words, then decompose the Code subtask. If the task requires the observe the screenshot to obtain vision information, such as observe the website, click the picture on the website, plan how to finish the "Task" need vision information. Image task needs usually can't be finished by QA/API/Code task. It use the screenshot's vision information to plan and finish the subtask.
+19. If the task involves operating keyboard and mouse input, such as click the search button, and click the first video, and type some words, then decompose the Code subtask. If the task requires the observe the screenshot to obtain vision information, such as observe the website, click the picture on the website, plan how to finish the "Task" need vision information. Vision task needs usually can't be finished by QA/API/Code task. It use the screenshot's vision information to plan and finish the subtask.
 19. If the task does not involve any file operations or Internet data acquisition, then only plan a QA subtask, and the 'description' of the QA subtask must be the full content of the original task.
 20. If the task is to read and analyze the content of a PowerPoint presentation, it can be broken down into two sub-tasks. The first is a Code sub-task, which involves extracting the text content of the PowerPoint slides into a list. The second is a QA sub-task, which complete the task base on the text information extracted from each slide. 
 21. Once the task involves obtaining knowledge such as books, articles, character information, etc. you need to plan API tasks to obtain this knowledge from the Internet.
 22. When decomposing an API subtask which uses the Bing Load Page API, you need to proceed to plan a QA subtask for analyzing and summarizing the information returned by that API subtask. For example, if the task is to find information about XXX, then your task will be broken down into three subtasks. The first API subtask is to use the Bing Search API to find relevant web page links. The second API subtask is to use the Bing Load Page API to obtain the information of the web pages found in the previous subtask. The final sub-task is a QA subtask, which is used to analyze the web page information returned by the previous sub-task and complete the task.
 23. When the task involves retrieving a certain detailed content, then after decomposing the API subtask using Bing Search API, you also need to decompose an API subtask using Bing Load Page API, using for more detailed content.
-24. If the attached file is a png or jpg file, the task must first be decomposed a API subtask, which uses image caption API to analyze image and solve problem. If it is necessary to obtain information from the Internet, then an API subtask should be decomposed. Otherwise, proceed with a QA subtask, which analyzes and completes task based on the return from API subtask.
+24. If the attached file is a png or jpg file, the task must first be decomposed a API subtask, which uses Vision caption API to analyze Vision and solve problem. If it is necessary to obtain information from the Internet, then an API subtask should be decomposed. Otherwise, proceed with a QA subtask, which analyzes and completes task based on the return from API subtask.
 25. Please note that all available APIs are only in the API List. You should not make up APIs that are not in the API List.
 26. If the attached file is a mp3 file, you can only break out two subtasks! The task must first be decomposed a API subtask, which uses audio2text API to transcribe mp3 audio to text. Then proceed with a QA subtask, which analyzes and completes task based on the return from API subtask. 
 27. Since the analyse or the content of the file are in the return value of the first subtask, if the following subtask requires the content or the analyse, the first subtask needs to be added to the dependencies of that subtask.
 28. If the task has a path to the file, then the subtask that operates the file must write the full path of the file in the task description, for example, add a new sheet, write calculation results into a certain column, etc.
-29. If a task requires identifying specific elements within an image or analyzing the content of an image, it can be decomposed into an "Image task". For example, identifying buttons, icons, or text in a screenshot.
-30. If a task involves operations within a Graphical User Interface (GUI), such as clicking buttons, filling out forms, or navigating menus, and these operations cannot be directly completed through code, they should be considered for decomposition into an "Image task".
-31. If a task requires making decisions based on visual information, such as choosing the appropriate link or button to click based on the layout of a webpage, it should be decomposed into an "Image task".
-32. "Image tasks" are capable of adapting to various interface designs and layouts, especially when access to the DOM structure or explicit identifiers of interface elements is not available.
+29. If a task requires identifying specific elements within an Vision or analyzing the content of an Vision, it can be decomposed into an "Vision task". For example, identifying buttons, icons, or text in a screenshot.
+30. If a task involves operations within a Graphical User Interface (GUI), such as clicking buttons, filling out forms, or navigating menus, and these operations cannot be directly completed through code, they should be considered for decomposition into an "Vision task".
+31. If a task requires making decisions based on visual information, such as choosing the appropriate link or button to click based on the layout of a webpage, it should be decomposed into an "Vision task".
+32. "Vision tasks" are capable of adapting to various interface designs and layouts, especially when access to the DOM structure or explicit identifiers of interface elements is not available.
 33. If a task requires understanding the content within a video, such as identifying objects, human behaviors, or events that appear in the video, it should be decomposed into a "Video task".
 ''',
         '_SYSTEM_TASK_REPLAN_PROMPT': '''

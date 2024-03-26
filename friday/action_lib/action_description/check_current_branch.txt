@@ -1,0 +1,1 @@
+Execute a git command to check the current branch in the specified directory.

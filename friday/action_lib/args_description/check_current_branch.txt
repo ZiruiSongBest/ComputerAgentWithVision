@@ -1,0 +1,9 @@
+Executes a git command to check the current branch in the specified directory.
+
+        Args:
+            directory_path (str): The path to the directory where the git command should be executed.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            None, but prints the current git branch.

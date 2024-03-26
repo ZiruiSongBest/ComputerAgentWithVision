@@ -1,5 +1,5 @@
 class ActionNode:
-    def __init__(self, name, description, type):
+    def __init__(self, name, description, type, detail = ''):
         self._name = name
         self._description = description
         self._return_val = ''
@@ -7,6 +7,7 @@ class ActionNode:
         self._next_action = {}
         self._status = False
         self._type = type
+        self._detail = detail
 
     @property
     def name(self):
@@ -31,6 +32,10 @@ class ActionNode:
     @property
     def type(self):
         return self._type 
+    
+    @property
+    def detail(self):
+        return self._detail
     
     @property
     def next_action(self):
