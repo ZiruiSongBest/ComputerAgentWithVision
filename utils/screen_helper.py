@@ -2,6 +2,7 @@ from typing import Dict
 from mss import mss
 from PIL import Image
 from utils.logger import Logger
+from utils.encode_image import encode_image_binary, encode_single_data_to_base64
 import os
 from datetime import datetime
 
@@ -35,7 +36,7 @@ class ScreenHelper:
         if logger:
             self.logger.info(f"ScreenHelper initialized for monitor {monitor}")
     
-    def capture(self, image_name: str = str(datetime.now().strftime("%Y%m%d_%H%M%S")) + '.png') -> list[Image.Image, Dict[str, int], str]:
+    def capture(self, image_name: str = str(datetime.now().strftime("%Y%m%d_%H%M%S")) + '.png') -> Dict:
         """
         Captures a screenshot of the specified monitor and returns it as a PIL Image.
 
@@ -44,8 +45,18 @@ class ScreenHelper:
         """
         
         captured = [self.capture_screenshot(), self.get_screenshot_dimensions()]
+        
         if image_name:
             captured.append(self.save_image(image_name, captured[0]))
+        
+        captured.append(encode_single_data_to_base64(captured[0]))
+        
+        captured = {
+            'image': captured[0],
+            'dimensions': captured[1],
+            'file_path': captured[2],
+            'base64': captured[3]
+        }
 
         if self.logger:
             self.logger.info("Screenshot captured")

@@ -18,21 +18,19 @@ from utils.logger import Logger
 
 '''
 Vision Task Categories:
-1. click
-2. enter
-3. scroll (Move and Scroll?)
-4. keyboard
+Click, Enter, Scroll, Observe
+# 4. keyboard
 # 5. observation
 '''
 class Vision:
     def __init__(self, llm_provider_config_path: str = "./vision/config/openai_config.json", logger: Logger = None) -> None:
         # Helpers
+        self.logger = Logger() if logger is None else logger
         self.llm_provider: OpenAIProvider = OpenAIProvider()
         self.llm_provider.init_provider(llm_provider_config_path)
         self.seeclick = SeeClick()
         self.screen_helper = ScreenHelper()
         self.key_tool = IOEnvironment()
-        self.logger = Logger() if logger is None else logger
         
         # submodules
         self.vision_planner = VisionPlanner(llm_provider=self.llm_provider, seeclick=self.seeclick, screen_helper=self.screen_helper, logger=self.logger)
@@ -41,28 +39,27 @@ class Vision:
         # variables
         self.system_version = get_os_name()
     
-    def plan_task(self, task: dict) -> None:
-        # Extract task details
-        task_name = task.get("name")
-        task_description = task.get("description")
-        task_type = task.get("type")
-
-        # Log task initiation
-        self.logger.log(f"VISION Planning task: {task_name}")
+    def global_execute(self, task, action, action_node, pre_tasks_info):
+        next_action = action_node.next_action
+        description = action_node.description
         
-        self.vision_planner.plan_task(task)
-
-    def execute_task(self, task: dict) -> dict:
         # Extract task details
-        task_name = task.get("name")
-        task_description = task.get("description")
-        task_type = task.get("type")
+        # task_name = task.get("name")
+        # task_type = task.get("type")
+
+        self.logger.log(f"VISION Global task: {action}")
+        self.vision_planner.plan_task(pre_tasks_info, action, description)
+        
+        # Execute task
+        for task_name in self.vision_planner.vision_tasks:
+            self.execute_task(task_name)
+    
+    def execute_task(self, task_name) -> dict:
+        # Extract task details
+        task = self.vision_planner.vision_nodes.get(task_name)
 
         # Log task initiation
         self.logger.log(f"VISION Executing task: {task_name}")
 
         # Execute task
         return self.vision_executor.execute_task(task)
-    
-    def execute_tasks(self, tasks: List[dict]) -> List[dict]:
-        return [self.execute_task(task) for task in tasks]

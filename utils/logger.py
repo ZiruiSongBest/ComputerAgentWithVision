@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 from colorama import Fore, Back, Style, init
+from utils.singleton import Singleton
 
 init(autoreset=True)  # Initializes colorama to auto-reset the color codes after each print
 
@@ -19,7 +20,7 @@ class ColorFormatter(logging.Formatter):
         record.msg = f"{color}{str(record.msg)}{Style.RESET_ALL}"
         return super().format(record)
 
-class Logger:
+class Logger(metaclass=Singleton):
     COLOR_MAP = {
         "red": Fore.RED,
         "green": Fore.GREEN,
@@ -31,13 +32,17 @@ class Logger:
     }
 
     def __init__(self, log_dir='log', log_filename='default.log', log_prefix=None, level=logging.INFO):
-        self.log_dir = log_dir
-        self.log_filename = log_filename
-        self.log_prefix = log_prefix if log_prefix else self.random_string(16)
-        self.level = level
-        self.setup_logger()
-        if not os.path.exists(self.log_dir):
-            os.makedirs(self.log_dir)
+        if not hasattr(self, 'logger'):
+            self.log_dir = log_dir
+            self.log_filename = log_filename
+            self.log_prefix = log_prefix if log_prefix else self.random_string(16)
+            self.level = level
+            
+            # 确保日志目录存在
+            if not os.path.exists(self.log_dir):
+                os.makedirs(self.log_dir)
+            
+            self.setup_logger()
 
     @staticmethod
     def random_string(length):

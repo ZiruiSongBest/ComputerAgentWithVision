@@ -31,8 +31,6 @@ class FridayExecutor:
         }
         if state.error is not None:
             self.logging.error(state.error)
-        # else:
-        #     self.logging.info(state, title='Execution Result', color='green')
         self.logging.info(f"The subtask result is: {json.dumps(output, indent=4)}", title='Execution Result', color='grey')
         return state
     
@@ -45,19 +43,15 @@ class FridayExecutor:
         # task planner
         self.planning_agent.decompose_task(task, retrieve_action_description_pair)
     
-
-    def execute_task(self, task):
+    def execute_task(self, task, action, action_node, pre_tasks_info):
         self.logging.debug("The current task is: {task}".format(task=task))
-        action = self.planning_agent.execute_list[0]
-        action_node = self.planning_agent.action_node[action]
-        description = action_node.description
-        self.logging.info("The current subtask is: {subtask}".format(subtask=description), title='Current Subtask', color='green')
-        code = ''
-        # The return value of the current task
-        result = ''
-        next_action = action_node.next_action
         type = action_node.type
-        pre_tasks_info = self.planning_agent.get_pre_tasks_info(action)
+        next_action = action_node.next_action
+        description = action_node.description
+        
+        # required return using values
+        code = ''
+        result = ''
         relevant_code = {}
         
         if type == 'QA':

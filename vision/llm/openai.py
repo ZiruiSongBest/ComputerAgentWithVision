@@ -20,12 +20,13 @@ from openai import OpenAI, APIError, RateLimitError, APITimeoutError
 from vision.llm.base_llm import LLMProvider
 from vision.llm.base_embedding import EmbeddingProvider
 from config import Config
-from utils import logger
+from utils.logger import Logger
 from utils.json_utils import load_json
 from utils.encoding_utils import encode_base64, decode_base64
 from utils.file_utils import assemble_project_path
 
 config = Config()
+logger = Logger()
 
 MAX_TOKENS = {
     "gpt-3.5-turbo-0301": 4097,
@@ -272,7 +273,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
         if config.debug_mode:
             logger.debug(f"Creating chat completion with model {model}, temperature {temperature}, max_tokens {max_tokens}")
         else:
-            logger.write(f"Requesting {model} completion...")
+            logger.info(f"Requesting {model} completion...")
 
         @backoff.on_exception(
             backoff.constant,
@@ -301,7 +302,6 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
 
             if response is None:
                 logger.error("Failed to get a response from OpenAI. Try again.")
-                logger.double_check()
 
             message = response.choices[0].message.content
             
@@ -317,7 +317,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                 "system_fingerprint" : response.system_fingerprint,
             }
 
-            logger.write(f'Response received from {model}.')
+            logger.info(f'Response received from {model}.')
 
             return message, info
 
@@ -345,7 +345,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             logger.debug(
                 f"Creating chat completion with model {model}, temperature {temperature}, max_tokens {max_tokens}")
         else:
-            logger.write(f"Requesting {model} completion...")
+            logger.info(f"Requesting {model} completion...")
 
         @backoff.on_exception(
             backoff.constant,
@@ -376,7 +376,6 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
 
             if response is None:
                 logger.error("Failed to get a response from OpenAI. Try again.")
-                logger.double_check()
 
             message = response.choices[0].message.content
 
@@ -387,7 +386,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                 "system_fingerprint": response.system_fingerprint,
             }
 
-            logger.write(f'Response received from {model}.')
+            logger.info(f'Response received from {model}.')
 
             return message, info
 

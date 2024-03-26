@@ -58,6 +58,9 @@ class PlanningModule(BaseAgent):
         """
         Implement task disassembly logic.
         """
+        
+        # TESTCASE TEMP COMMENTED
+
         files_and_folders = self.environment.list_working_dir()
         action_description_pair = json.dumps(action_description_pair)
         response = self.task_decompose_format_message(task, action_description_pair, files_and_folders)
@@ -69,6 +72,10 @@ class PlanningModule(BaseAgent):
         
         json_utils.save_json(json_utils.json_append(copy.deepcopy(decompose_json), 'task', task), f'planner_response_formatted.json', indent=4)
         self.logging.info(f"{decompose_json}", title='Decompose Task', color='gray')
+
+        
+        # with open('testcase/planner_response_formatted.json') as f:
+        #     decompose_json = json.load(f)
         
         # Building action graph and topological ordering of actions
         self.create_action_graph(decompose_json)
@@ -79,10 +86,10 @@ class PlanningModule(BaseAgent):
         replan new task to origin action graph .
         """
         # current_task information
-        current_action = self.action_node[current_task]
-        current_task_description = current_action.description
-        relevant_action_description_pair = json.dumps(relevant_action_description_pair)
-        files_and_folders = self.environment.list_working_dir()
+        current_action = self.action_node[current_task] # action_node
+        current_task_description = current_action.description # description
+        relevant_action_description_pair = json.dumps(relevant_action_description_pair) # no need
+        files_and_folders = self.environment.list_working_dir() # current image
         response = self.task_replan_format_message(reasoning, current_task, current_task_description, relevant_action_description_pair, files_and_folders)
         new_action = self.extract_json_from_string(response)
         # add new action to action graph
@@ -126,7 +133,8 @@ class PlanningModule(BaseAgent):
             {"role": "user", "content": user_prompt},
         ]
         
-        json_utils.save_json(json_utils.json_append(copy.deepcopy(self.message), 'task', task), f'planner_plan.json', indent=4)   
+        json_utils.save_json(json_utils.json_append(copy.deepcopy(self.message), 'task', task), f'planner_plan.json', indent=4)
+        
         return self.llm.chat(self.message)
       
     def task_replan_format_message(self, reasoning, current_task, current_task_description, action_list, files_and_folders):

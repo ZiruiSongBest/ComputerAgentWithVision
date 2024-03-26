@@ -7,6 +7,7 @@ from vision.grounding.seeclick import SeeClick
 from utils.encode_image import encode_data_to_base64_path, encode_single_data_to_base64
 from utils.screen_helper import ScreenHelper
 from utils.logger import Logger
+from utils.json_utils import save_json
 from vision.prompt.prompt import prompt
 from PIL import Image
 
@@ -29,10 +30,11 @@ class VisionPlanner:
         self._init_templates(template_file_path)
         
         # variables
+        self.action_num = 0
         self.messages: List[Dict[str, Any]] = []
         self.system_version = system_version
-        self.vision_tasks = [] # list of task names
-        self.vision_nodes = {} # dict of task name: ActionNode
+        self.vision_tasks = [] # list of task names, execute_list
+        self.vision_nodes = {} # dict of task name: ActionNode, action_node
 
     def _init_templates(self, template_file_path) -> None:
         if template_file_path:
@@ -47,7 +49,7 @@ class VisionPlanner:
             "content": self.templates.get(template_name, "default")
         }]
     
-    def plan_task(self, task: Dict[str, Any]) -> None:
+    def plan_task(self, pre_task_info, task_name, task_description):
         '''
             Get a task from Friday, and plan the vision task with vision planner
         
@@ -57,17 +59,103 @@ class VisionPlanner:
         Returns:
             None
         '''
-        response = self.task_decompose_format_message(task)
-        decomposed_tasks = self.extract_decomposed_tasks(response)
+        
+        plan_task_message = self.task_decompose_format_message(pre_task_info, task_name, task_description)
+        
+        # TESTCASE TEMP COMMENTED
+        response = self.llm_provider.create_completion(plan_task_message, max_tokens=1000)
+        self.logger.info(response)
+        decomposed_tasks = self.extract_decomposed_tasks(response[0])
+        
+        # with open("testcase/decompose_task_message.json", "r") as f:
+        #     decomposed_tasks = json.load(f)
         
         for _, task_info in decomposed_tasks.items():
             self.action_num += 1
             task_name = task_info['name']
             task_description = task_info['description']
             task_type = task_info['type']
+            task_deatil = task_info['content']
             # task_dependencies = task_info['dependencies']
             self.vision_tasks.append(task_name)
-            self.vision_nodes[task_name] = ActionNode(task_name, task_description, task_type)
+            self.vision_nodes[task_name] = ActionNode(task_name, task_description, task_type, task_deatil)
+    
+    def task_decompose_format_message(self, pre_task_info, task_name, task_description):
+        '''
+            Send decompose task prompt to LLM and get task list.
+            This compose of:
+                1. pre_task_info
+                2. current image information
+                3. current task description with system prompt
+        '''
+        # system_prompt = self.templates.get("plan_task", "default")
+        system_prompt = self.templates.get("decompose_system", "default")
+        
+        # user_prompt = self.templates.get("plan_task_user_prompt", "default")
+        user_prompt = f"Please help me to decompose the task: {task_name}, {task_description}. If the current task is already completed, please still return json, but with a null dict."
+        
+        current_image = self.screen_helper.capture()
+        current_image_base64 = current_image['base64']
+        
+        # user_prompt = self.prompt['_USER_TASK_REPLAN_PROMPT'].format(
+        #     pre_task_info = pre_task_info,
+        #     current_task_description = current_task_description,
+        #     system_version=self.system_version,
+        #     reasoning = reasoning,
+        #     action_list = action_list,
+        #     working_dir = self.environment.working_dir,
+        #     files_and_folders = files_and_folders
+        # )
+        # current_image_base64 = 'fbase64'
+        
+        self.message = [
+            {
+                "role": "system", 
+                "content": system_prompt # 作为planner的sys prompt
+            },
+            {
+                "role": "user", 
+                "content": [
+                    {
+                        "type": "text",
+                        "text": "previous task information: " + pre_task_info # 加入pre_task_info
+                    },
+                    {
+                        "type": "text",
+                        "text": "Current Screenshot:"
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": current_image_base64,    # 给出当前状态的截图
+                            "detail": "low"
+                        }
+                    },
+                    {
+                        "type": "text",
+                        "text": user_prompt # 给出我想要这一步做什么的task和描述
+                    }
+                ]
+            },
+        ]
+
+        save_json(self.message, "decompose_task_message.json")
+        return self.message
+
+    def task_replan_format_message(self, task: Dict[str, Any]) -> List[Dict[str, Any]]:
+        # user_prompt = self.prompt['_USER_TASK_REPLAN_PROMPT'].format(
+        #     current_task = current_task,
+        #     current_task_description = current_task_description,
+        #     system_version=self.system_version,
+        #     reasoning = reasoning,
+        #     action_list = action_list,
+        #     working_dir = self.environment.working_dir,
+        #     files_and_folders = files_and_folders
+        # )
+        pass
+    
+    def get_pre_tasks_info(self, task: Dict[str, Any]) -> List[Dict[str, Any]]:
+        pass
     
     def get_pre_tasks_info(self, current_task): # 传入的是action
         """
@@ -85,39 +173,13 @@ class VisionPlanner:
         pre_tasks_info = json.dumps(pre_tasks_info)
         return pre_tasks_info
     
-    def decompose_task(self, task: Dict[str, Any]) -> None:
-        pass
-    
-    def update_action(self, action: Dict[str, Any]) -> None:
-        pass
-    
-    def task_decompose_format_message(self, task: Dict[str, Any]) -> List[Dict[str, Any]]:
-        '''
-            Send decompose task prompt to LLM and get task list.
-        '''
-        system_prompt = self.templates.get("plan_task", "default")
-        user_prompt = self.templates.get("plan_task_user_prompt", "default")
-        
-        
-        # add other essential information
-        
-        # create self.messages
-        
-        # return self.llm_provider.create_completion(self.messages)
-
-    def task_replan_format_message(self, task: Dict[str, Any]) -> List[Dict[str, Any]]:
-        pass
-    
-    def get_pre_tasks_info(self, task: Dict[str, Any]) -> List[Dict[str, Any]]:
-        pass
-    
     def seeclick_task_planner(self, image_input: Union[str, Image.Image, None] = None, template_name: str = "seeclick_preprocess"):
         self.init_system_messages(template_name)
         base64_image = []
         
         if image_input is None:
             captured = self.screen_helper.capture()
-            image_input = captured[0]
+            image_input = captured['image']
             base64_image.append(encode_single_data_to_base64(image_input))
         elif isinstance(image_input, str):
             base64_image.append(encode_single_data_to_base64(image_input))
@@ -145,7 +207,6 @@ class VisionPlanner:
             }]
         })
         
-        print(self.messages)
         return self.messages
         return self.llm_provider.create_completion(self.messages)
     

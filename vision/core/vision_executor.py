@@ -24,7 +24,7 @@ from vision.prompt.prompt import prompt
 
 包含调用系统KEY_TOOL的各种操作, 还有键入等
 '''
-class Vision_Executor:
+class VisionExecutor:
     def __init__(self, template_file_path: str = None, llm_provider: OpenAIProvider = None, seeclick: SeeClick = None, screen_helper: ScreenHelper = None, key_tool: IOEnvironment = None, system_version: str = None, logger: Logger = None) -> None:
         # Helpers
         self.llm_provider = llm_provider
@@ -49,9 +49,11 @@ class Vision_Executor:
         else:
             self.templates = prompt
     
+    # def execute_seeclick(self, task) -> str:
+    #     self.seeclick.get_location(img, desc)
     
     def measure_execution(self, task, images) -> str:
-        """measure
+        """measure and analysis_action
 
         Args:
             task (str): the task to be executed
@@ -85,18 +87,4 @@ class Vision_Executor:
         else:
             return [False, message]
 
-    def execute(self, task):
-        self.logging.debug("The current task is: {task}".format(task=task.description))
-        if task.type == "click":
-            click_x, click_y = []
-            self.key_tool.move_and_click(click_x, click_y)
-        elif task.type == "click and Enter":
-            click_x, click_y = []
-            text = ""
-            self.key_tool.move_and_click(click_x, click_y)
-            self.key_tool.enter_text(text)
-        elif task.type == "scroll":
-            scroll_type, scroll_times = []
-            self.key_tool.scroll(scroll_type, scroll_times)
-        elif task.type == "keyboard":
-            self.key_tool.key_press(text)
+"Who is Ross Geller in Friends? [A] [ALT]"
