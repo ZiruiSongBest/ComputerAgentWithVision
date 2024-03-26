@@ -65,12 +65,12 @@ class PlanningModule(BaseAgent):
         action_description_pair = json.dumps(action_description_pair)
         response = self.task_decompose_format_message(task, action_description_pair, files_and_folders)
 
-        json_utils.save_json(json_utils.json_append(copy.deepcopy(response), 'task', task), f'planner_response.json', indent=4)
+        # json_utils.save_json(json_utils.json_append(copy.deepcopy(response), 'task', task), f'friday_planned_response.json', indent=4)
         
         self.logging.info(f"The overall response is: {response}", title='Original Response', color='gray')
         decompose_json = self.extract_json_from_string(response)
         
-        json_utils.save_json(json_utils.json_append(copy.deepcopy(decompose_json), 'task', task), f'planner_response_formatted.json', indent=4)
+        json_utils.save_json(json_utils.json_append(copy.deepcopy(decompose_json), 'task', task), f'friday_planned_formatted.json', indent=4)
         self.logging.info(f"{decompose_json}", title='Decompose Task', color='gray')
         '''
         
@@ -133,7 +133,7 @@ class PlanningModule(BaseAgent):
             {"role": "user", "content": user_prompt},
         ]
         
-        json_utils.save_json(json_utils.json_append(copy.deepcopy(self.message), 'task', task), f'planner_plan.json', indent=4)
+        json_utils.save_json(json_utils.json_append(copy.deepcopy(self.message), 'task', task), f'friday_planner_plan.json', indent=4)
         
         return self.llm.chat(self.message)
       

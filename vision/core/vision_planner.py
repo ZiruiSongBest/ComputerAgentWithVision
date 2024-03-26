@@ -1,5 +1,6 @@
 import json
 import re
+import copy
 from friday.core.action_node import ActionNode
 from typing import List, Dict, Union, Any
 from vision.llm.openai import OpenAIProvider
@@ -7,7 +8,7 @@ from vision.grounding.seeclick import SeeClick
 from utils.encode_image import encode_data_to_base64_path, encode_single_data_to_base64
 from utils.screen_helper import ScreenHelper
 from utils.logger import Logger
-from utils.json_utils import save_json
+from utils import json_utils
 from vision.prompt.prompt import prompt
 from PIL import Image
 
@@ -66,6 +67,7 @@ class VisionPlanner:
         # response = self.llm_provider.create_completion(plan_task_message, max_tokens=1000)
         # self.logger.info(response)
         # decomposed_tasks = self.extract_decomposed_tasks(response[0])
+        # json_utils.save_json(json_utils.json_append(copy.deepcopy(decomposed_tasks), 'task', task_description), f'vision_planned_formatted.json', indent=4)
         
         with open("testcase/decompose_task_message.json", "r") as f:
             decomposed_tasks = json.load(f)
@@ -88,6 +90,7 @@ class VisionPlanner:
                 2. current image information
                 3. current task description with system prompt
         '''
+        
         # system_prompt = self.templates.get("plan_task", "default")
         system_prompt = self.templates.get("decompose_system", "default")
         
@@ -139,7 +142,7 @@ class VisionPlanner:
             },
         ]
 
-        save_json(self.message, "decompose_task_message.json")
+        json_utils.save_json(self.message, "decompose_task_message.json")
         return self.message
 
     def task_replan_format_message(self, task: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -173,6 +176,7 @@ class VisionPlanner:
         pre_tasks_info = json.dumps(pre_tasks_info)
         return pre_tasks_info
     
+    # deprecated
     def seeclick_task_planner(self, image_input: Union[str, Image.Image, None] = None, template_name: str = "seeclick_preprocess"):
         self.init_system_messages(template_name)
         base64_image = []
@@ -230,6 +234,7 @@ class VisionPlanner:
         else:
             return "No JSON data found in the string."
 
+    # not used
     def assemble_prompt(self, template_name: str, message_prompt: str, image_path: Union[str, List[str]]) -> str:
         if template_name not in self.templates:
             raise ValueError(f"Template {template_name} not found.")
@@ -239,6 +244,7 @@ class VisionPlanner:
         prompt: str = template.replace("{{message_prompt}}", message_prompt).replace("{{image_url}}", encoded_images[0])
         return prompt
 
+    # not used
     def append_images_to_message(self, message: Dict[str, Any], image_paths: Union[str, List[str]]) -> None:
         encoded_images: List[str] = encode_data_to_base64_path(image_paths)
         for encoded_image in encoded_images:
