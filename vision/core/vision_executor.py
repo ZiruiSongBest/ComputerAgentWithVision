@@ -1,5 +1,7 @@
 import json
 from typing import List, Dict, Any
+
+import torch
 from vision.llm.openai import OpenAIProvider
 from vision.grounding.seeclick import SeeClick
 from utils.encode_image import encode_data_to_base64_path, encode_single_data_to_base64
@@ -16,7 +18,7 @@ from vision.prompt.prompt import prompt
 1. entertext: 输入一系列文本
 2. click: 点击某个位置
 3. click_and_enter: 点击某个位置，然后输入一系列文本
-# 3. keyboard: 键盘组合键
+4. scroll
 # 3. drag: 拖拽某个位置
 # 4. select: 选择某个位置
 # 5. wait: 等待一段时间
@@ -49,11 +51,9 @@ class VisionExecutor:
         else:
             self.templates = prompt
     
-    # def execute_seeclick(self, task) -> str:
-    #     self.seeclick.get_location(img, desc)
     
     def measure_execution(self, task, images) -> str:
-        """measure and analysis_action
+        """measure
 
         Args:
             task (str): the task to be executed
@@ -81,10 +81,69 @@ class VisionExecutor:
                 "description" : "The image after operation"
             }]
         })
-        [message,info] = self.llm_provider.create_completion(self.messages)
+        [message, info] = self.llm_provider.create_completion(self.messages)
         if message == "FINISH":
-            return [True, None]
+            return [True,None]
         else:
-            return [False, message]
+            return [False,message]
 
-"Who is Ross Geller in Friends? [A] [ALT]"
+    def text_regularization(self, text):
+        result = []
+        i = 0
+        in_tag = False  
+        tag_start = 0  
+        s = text
+        while i < len(s):
+            if s[i] == "<" and not in_tag and (i == 0 or s[i-1] != "\\"):
+                in_tag = True
+                tag_start = i
+            elif s[i] == ">" and in_tag: 
+                in_tag = False
+                result.append(s[tag_start+1:i])
+            elif not in_tag:
+                if s[i] == " ": 
+                    result.append("space")
+                else:  
+                    result.append(s[i])
+            i += 1
+
+        return result
+    
+    def enter(self, text):
+        text_list = self.text_regularization(text)
+        self.logger.info(f"Enter text: {text_list}")
+        for key in text_list:
+            self.key_tool.key_press(key)
+        return 'success'
+    
+    def click(self, content):
+        result = self.seeclick.get_location_with_current(content)
+        x, y = result['position'][0].item(), result['position'][1].item()
+        
+        self.key_tool.move_and_click(x, y, button='left', clicks=2, interval=2, duration=None)
+        return 'success'
+    
+    def observe(self, content):
+        captured = self.screen_helper.capture()
+        current_screen = encode_single_data_to_base64(captured['image'])
+        self.messages.append({
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": content
+                }, 
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": current_screen
+                    }
+                }
+            ]
+        })
+        response = self.llm_provider.create_completion(self.messages)
+        self.logger.info(response)
+        return response[0]
+
+# shape = VisionExecutor()
+# shape.enter_text("ABCDEFG")

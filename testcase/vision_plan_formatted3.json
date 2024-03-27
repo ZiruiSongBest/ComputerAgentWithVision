@@ -1,0 +1,37 @@
+{
+    "click_the_search_box": {
+        "name": "click_the_search_box",
+        "description": "Click the search box and prepare to enter",
+        "dependencies": [
+        ],
+        "type": "Click",
+        "content": "Search Google or type a URL"
+    },
+    "enter_weather": {
+        "name": "enter_weather",
+        "description": "enter weather into the search box",
+        "dependencies": [
+            "click_the_search_box"
+        ],
+        "type": "Enter",
+        "content": "weather for today"
+    },
+    "press_enter_to_navigate": {
+        "name": "press_enter_to_navigate",
+        "description": "press Enter to navigate to the weather",
+        "dependencies": [
+            "enter_weather"
+        ],
+        "type": "Enter",
+        "content": "<Enter>"
+    },
+    "observe_current_screen": {
+        "name": "observe_current_screen",
+        "description": "get the weather for today",
+        "dependencies": [
+            "press_enter_to_navigate"
+        ],
+        "type": "Observe",
+        "content": "What's the weather today?"
+    }
+}

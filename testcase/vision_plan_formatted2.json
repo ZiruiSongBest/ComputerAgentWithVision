@@ -1,0 +1,99 @@
+{
+    "observe_current_scree1": {
+        "name": "observe_current_screen1",
+        "description": "check if the current browser tab is already on Google's main page",
+        "dependencies": [],
+        "type": "Observe",
+        "content": ""
+    },
+    "Click the browser tab": {
+        "name": "Click the browser tab",
+        "description": "Click and prepare to enter",
+        "dependencies": [
+            "observe_current_screen1"
+        ],
+        "type": "Click",
+        "content": ""
+    },
+    "enter_google_url": {
+        "name": "enter_google_url",
+        "description": "enter Google's URL into the browser's address bar",
+        "dependencies": [
+            "observe_current_screen1"
+        ],
+        "type": "Enter",
+        "content": "https://www.google.com"
+    },
+    "press_enter_to_navigate": {
+        "name": "press_enter_to_navigate",
+        "description": "press Enter to navigate to Google's main page",
+        "dependencies": [
+            "enter_google_url"
+        ],
+        "type": "Enter",
+        "content": "<Enter>"
+    },
+    "wait_for_google_page_load": {
+        "name": "wait_for_google_page_load",
+        "description": "wait for Google's main page to load completely",
+        "dependencies": [
+            "press_enter_to_navigate"
+        ],
+        "type": "Observe",
+        "content": "Google home page fully loaded"
+    },
+    "observe_current_screen": {
+        "name": "observe_current_screen",
+        "description": "check if the search box is already on Google's main page",
+        "dependencies": [
+            "wait_for_google_page_load"
+        ],
+        "type": "Observe",
+        "content": ""
+    },
+    "Click the search box": {
+        "name": "Click the search box",
+        "description": "Click the search box and prepare to enter",
+        "dependencies": [
+            "observe_current_screen"
+        ],
+        "type": "Click",
+        "content": ""
+    },
+    "enter_weather": {
+        "name": "enter_weather",
+        "description": "enter weather into the search box",
+        "dependencies": [
+            "Click the search box"
+        ],
+        "type": "Enter",
+        "content": "weather for today"
+    },
+    "press_enter_to_navigate": {
+        "name": "press_enter_to_navigate",
+        "description": "press Enter to navigate to the weather",
+        "dependencies": [
+            "enter_weather"
+        ],
+        "type": "Enter",
+        "content": "<Enter>"
+    },
+    "wait_for_google_page_load": {
+        "name": "wait_for_google_page_load",
+        "description": "wait for Google's main page to load completely",
+        "dependencies": [
+            "press_enter_to_navigate"
+        ],
+        "type": "Observe",
+        "content": "Google home page fully loaded"
+    },
+    "observe_current_screen": {
+        "name": "observe_current_screen",
+        "description": "get the weather for today",
+        "dependencies": [
+            "press_enter_to_navigate"
+        ],
+        "type": "Observe",
+        "content": ""
+    }
+}

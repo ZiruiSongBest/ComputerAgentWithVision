@@ -1,4 +1,3 @@
-import os
 import argparse
 from utils.logger import Logger
 from friday.agent.friday_agent import FridayAgent

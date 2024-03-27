@@ -64,13 +64,15 @@ class VisionPlanner:
         plan_task_message = self.task_decompose_format_message(pre_task_info, task_name, task_description)
         
         # TESTCASE TEMP COMMENTED
-        # response = self.llm_provider.create_completion(plan_task_message, max_tokens=1000)
-        # self.logger.info(response)
-        # decomposed_tasks = self.extract_decomposed_tasks(response[0])
-        # json_utils.save_json(json_utils.json_append(copy.deepcopy(decomposed_tasks), 'task', task_description), f'vision_planned_formatted.json', indent=4)
+        response = self.llm_provider.create_completion(plan_task_message, max_tokens=1000)
+        self.logger.info(response)
+        decomposed_tasks = self.extract_decomposed_tasks(response[0])
+        json_utils.save_json(json_utils.json_append(copy.deepcopy(decomposed_tasks), 'task', task_description), f'vision_planned_formatted.json', indent=4)
         
-        with open("testcase/decompose_task_message.json", "r") as f:
-            decomposed_tasks = json.load(f)
+        # with open("testcase/vision_plan_formatted3.json", "r") as f:
+        #     decomposed_tasks = json.load(f)
+        
+        self.logger.info(decomposed_tasks, title='Vision Planned Tasks', color='green')
         
         for _, task_info in decomposed_tasks.items():
             self.action_num += 1
@@ -157,10 +159,20 @@ class VisionPlanner:
         # )
         pass
     
-    def get_pre_tasks_info(self, task: Dict[str, Any]) -> List[Dict[str, Any]]:
-        pass
+    def update_action(self, action, return_val='', relevant_code=None, status=False, type='Code'):
+        """
+        Update action node info.
+        """
+        # if type=='Observe':
+        #     self.vision_nodes[action]._return_val = return_val
+        if return_val != 'None':
+            self.vision_nodes[action]._return_val = return_val
+        if relevant_code:
+            self.vision_nodes[action]._relevant_code = relevant_code
+        self.vision_nodes[action]._status = status
+        return
     
-    def get_pre_tasks_info(self, current_task): # 传入的是action
+    def get_pre_tasks_info(self, current_task, observe_only = False): # 传入的是action
         """
         Get string information of the prerequisite task for the current task.
         """
@@ -168,12 +180,14 @@ class VisionPlanner:
         for task in self.vision_tasks:
             if task == current_task:
                 break
+            if observe_only and self.vision_nodes[task].type != 'Observe':
+                continue
             task_info = {
                 "description" : self.vision_nodes[task].description,
                 "return_val" : self.vision_nodes[task].return_val
             }
             pre_tasks_info[task] = task_info
-        pre_tasks_info = json.dumps(pre_tasks_info)
+        pre_tasks_info = json.dumps(pre_tasks_info, indent=4)
         return pre_tasks_info
     
     # deprecated

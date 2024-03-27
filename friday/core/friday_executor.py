@@ -44,7 +44,7 @@ class FridayExecutor:
         self.planning_agent.decompose_task(task, retrieve_action_description_pair)
     
     def execute_task(self, task, action, action_node, pre_tasks_info):
-        self.logging.debug("The current task is: {task}".format(task=task))
+        # self.logging.debug("The current task is: {task}".format(task=task))
         type = action_node.type
         next_action = action_node.next_action
         description = action_node.description
@@ -109,6 +109,7 @@ class FridayExecutor:
                     if score >= self.score:
                         self.execute_agent.store_action(action, code)
         return ['success', result, relevant_code]
+
 # Usage example
 # friday_executor = FridayExecutor(planning_agent, execute_agent, retrieve_agent)
 # friday_executor.execute_task(type, pre_tasks_info, task, description, action, next_action)
