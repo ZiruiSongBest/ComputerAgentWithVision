@@ -3,7 +3,8 @@ import sys
 sys.dont_write_bytecode = True
 from typing import Union, Optional
 from subprocess import run, PIPE
-import get_os_version
+from friday.action import get_os_version
+# import get_os_version
 
 class Output:
     def __init__(self, stdout: str, stderr: str):

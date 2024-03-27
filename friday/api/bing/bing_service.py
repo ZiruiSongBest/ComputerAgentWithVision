@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel,Field
 from typing import Optional
-from .bing_api import BingAPI
+# from .bing_api import BingAPI
 from .bing_api_v2 import BingAPIV2
 from .image_search_api import ImageSearchAPI
 import tiktoken
@@ -18,7 +18,7 @@ def num_tokens_from_string(string: str) -> int:
 
 router = APIRouter()
 
-bing_api = BingAPI(BING_API) 
+# bing_api = BingAPI(BING_API) 
 bing_api_v2 = BingAPIV2()
 image_search_api = ImageSearchAPI(BING_API) 
 
