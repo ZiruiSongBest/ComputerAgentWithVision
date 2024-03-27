@@ -1,9 +1,0 @@
-Executes the system command to open VSCode at the specified path.
-
-        Args:
-            path (str): The path where VSCode should be opened.
-            *args: Variable length argument list.
-            **kwargs: Arbitrary keyword arguments.
-
-        Returns:
-            None, but prints a message confirming the execution of the command.

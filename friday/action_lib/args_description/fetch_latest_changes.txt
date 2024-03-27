@@ -1,9 +1,0 @@
-Executes a git command to fetch the latest changes from the remote repository for the specified directory.
-
-        Args:
-            directory_path (str): The path to the directory where the git command should be executed.
-            *args: Variable length argument list.
-            **kwargs: Arbitrary keyword arguments.
-
-        Returns:
-            None, but prints a message confirming the execution of the fetch command.

@@ -54,7 +54,6 @@ def main():
             planning_agent.update_action(action, result, relevant_code, True, type)
             planning_agent.execute_list.remove(action)
 
-
 if __name__ == '__main__':
     dotenv.load_dotenv()
     main()

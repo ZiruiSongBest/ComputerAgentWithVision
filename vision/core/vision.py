@@ -58,7 +58,8 @@ class Vision:
             current_result = self.execute_task(task_name)
             self.vision_planner.update_action(task_name, current_result, True, vision_type)
 
-        is_success = self.vision_executor.observe(f"Is current task completed? Task is {task_name}: {description}. If the task seems correctly executed, please click 'Yes' to continue, otherwise click 'No'." + "\nthe current execution result is: " + result)
+        result = self.vision_planner.get_pre_tasks_info('end', True)
+        is_success = self.vision_executor.observe(f"Is current task completed? Task is {task_name}: {description}. Look at the screenshot and read the return results of the execution, if the task seems correctly executed, please click 'Yes' to continue, otherwise click 'No'." + "\nthe current execution result is: " + result)
         
         if 'yes' in is_success:
             status = 'success'
@@ -67,7 +68,6 @@ class Vision:
         # elif: status cannot be down with vision:
         #   is_success = 'replan'
         
-        result = self.vision_planner.get_pre_tasks_info('end', True)
         self.logger.info(result, title='Vision Task Result', color='green')
 
         return [status, result, relevant_code]

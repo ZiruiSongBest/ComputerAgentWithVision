@@ -29,10 +29,10 @@ class SeeClick:
         files = {'image': open(captured['file_path'], 'rb')}
         data = {'text': ref}
 
-        # response = requests.post(self.url, files=files, data=data).json()
-        # print(response['dot_location'])
-        # location = response['dot_location']
-        location = "(0.39,0.48)"
+        response = requests.post(self.url, files=files, data=data).json()
+        print(response['dot_location'])
+        location = response['dot_location']
+        # location = "(0.39,0.48)"
 
         tensor_location = torch.tensor([[float(coord) for coord in location.strip("()").split(",")]])
         position = [captured['dimensions']['width'] * tensor_location[0][0], captured['dimensions']['height'] * tensor_location[0][1]] # 'left', 'top', 'width', 'height'

@@ -1,1 +1,0 @@
-Execute a system command to open System Preferences on macOS.
