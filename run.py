@@ -1,8 +1,9 @@
 import argparse
+import os
 from utils.logger import Logger
 from friday.agent.friday_agent import FridayAgent
 from friday.core.friday_executor import FridayExecutor
-from vision.core.vision import Vision
+# from vision.core.vision import Vision
 
 import dotenv
 
@@ -15,14 +16,17 @@ def main():
     parser.add_argument('--logging_filedir', type=str, default='log', help='log path')
     parser.add_argument('--logging_filename', type=str, default='temp.log', help='log file name')
     parser.add_argument('--logging_prefix', type=str, default=Logger.random_string(4), help='log file prefix')
-    parser.add_argument('--score', type=int, default=6, help='critic score > score => store the tool')
+    parser.add_argument('--score', type=int, default=8, help='critic score > score => store the tool')
     args = parser.parse_args()
+
+    if os.path.exists(args.logging_filedir):
+        return
 
     logging_logger = Logger(log_dir=args.logging_filedir, log_filename=args.logging_filename, log_prefix=args.logging_prefix)
     friday_agent = FridayAgent(config_path=args.config_path, action_lib_dir=args.action_lib_path, logger=logging_logger)
     planning_agent = friday_agent.planner
     executor = FridayExecutor(planning_agent, friday_agent.executor, friday_agent.retriever, logging_logger, args.score)
-    vision_executor = Vision(logger=logging_logger)
+    # vision_executor = Vision(logger=logging_logger)
 
     task = 'Your task is: {0}'.format(args.query)
     if args.query_file_path != '':
@@ -39,10 +43,10 @@ def main():
         type = planning_agent.action_node[planning_agent.execute_list[0]].type # '{"open_google_chrome": {"description": "Execute a system command to open Google Chrome on macOS.", "return_val": ["\\nNone\\n"]}}'
         logging_logger.info("The current subtask is: {subtask}".format(subtask=description), title=f'Current {type} Task', color='green')
         
-        if type == 'Vision':
-            return_val = vision_executor.global_execute(task, action, action_node, pre_tasks_info)
-        else:
-            return_val = executor.execute_task(task, action, action_node, pre_tasks_info)
+        # if type == 'Vision':
+            # return_val = vision_executor.global_execute(task, action, action_node, pre_tasks_info)
+        # else:
+        return_val = executor.execute_task(task, action, action_node, pre_tasks_info)
         
         if return_val[0] == 'fail':
             break
@@ -50,7 +54,13 @@ def main():
             continue
         elif return_val[0] == 'success':
             _, result, relevant_code = return_val
-            print("Current task execution completed!!!")  
+            print("Current task execution completed!!!")
+            
+            if result != None and result != '':
+                with open(os.path.join(args.logging_filedir, 'result.txt'), 'a') as f:
+                    f.write(f'{action}: {result} \n')
+                with open(os.path.join(args.logging_filedir, 'final_result.txt'), 'w') as f:
+                    f.write(f'{action}: {result} \n')
             planning_agent.update_action(action, result, relevant_code, True, type)
             planning_agent.execute_list.remove(action)
 

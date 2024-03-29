@@ -2,12 +2,12 @@ import json
 import re
 import os
 
-from utils.logger import Logger
+# from utils.logger import Logger
 from utils import file_utils
 from datetime import datetime
 
 
-logger = Logger()
+# logger = Logger()
 now = datetime.now()
 
 def load_json(file_path):
@@ -68,18 +68,3 @@ def refine_json(json_string):
             if check_json(json_string):
                 return json_string
     return json_string
-
-
-def parse_semi_formatted_json(json_string):
-
-    obj = None
-
-    try:
-        response = refine_json(json_string)
-        obj = json.loads(response)
-
-    except Exception as e:
-        logger.error(f"Error in processing json: {e}. Object was: {json_string}.")
-        logger.error_ex(e)
-
-    return obj

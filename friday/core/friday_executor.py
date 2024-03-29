@@ -16,6 +16,7 @@ class FridayExecutor:
         else:
             result = self.execute_agent.question_and_answer_action(pre_tasks_info, task, description)
         self.logging.info(result, title='QA Result', color='green')
+        return result
 
     def retrieve_existing_action(self, description):
         retrieve_name = self.retrieve_agent.retrieve_action_name(description, 3)
@@ -55,7 +56,7 @@ class FridayExecutor:
         relevant_code = {}
         
         if type == 'QA':
-            self.handle_qa_type(pre_tasks_info, task, description)
+            result = self.handle_qa_type(pre_tasks_info, task, description)
         else:
             invoke = ''
             if type == 'API':

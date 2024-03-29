@@ -70,7 +70,8 @@ class PlanningModule(BaseAgent):
         self.logging.info(f"The overall response is: {response}", title='Original Response', color='gray')
         decompose_json = self.extract_json_from_string(response)
         
-        json_utils.save_json(json_utils.json_append(copy.deepcopy(decompose_json), 'task', task), f'friday_planned_formatted.json', indent=4)
+        self.logging.write_json(decompose_json)
+        # json_utils.save_json(json_utils.json_append(copy.deepcopy(decompose_json), 'task', task), f'friday_planned_formatted.json', indent=4)
         self.logging.info(f"{decompose_json}", title='Decompose Task', color='gray')
 
         
@@ -133,7 +134,7 @@ class PlanningModule(BaseAgent):
             {"role": "user", "content": user_prompt},
         ]
         
-        json_utils.save_json(json_utils.json_append(copy.deepcopy(self.message), 'task', task), f'friday_planner_plan.json', indent=4)
+        # json_utils.save_json(json_utils.json_append(copy.deepcopy(self.message), 'task', task), f'friday_planner_plan.json', indent=4)
         
         return self.llm.chat(self.message)
       
