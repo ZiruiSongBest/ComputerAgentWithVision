@@ -1,8 +1,10 @@
 import requests
 import json
+import os
 
 # 你的API的URL
-url = "http://localhost:8079/tools/database"
+BASE_URL = os.getenv("BASE_URL", "http://localhost:8998")
+url = BASE_URL + "/tools/database"
 
 # 准备的SQL查询
 queries = {
@@ -21,13 +23,13 @@ ORDER BY departure_time;'''
 response = requests.post(url, json=queries)
 
 # 打印返回的结果
-print(json.dumps(response.json(), indent=4))
+# print(json.dumps(response.json(), indent=4))
 
 
 def query_database(query):
     try:
         response = requests.post(
-            "http://localhost:8079/tools/database",
+            url,
             json={'queries': query}
         ).json()
         return json.dumps(response, indent=4)
@@ -40,3 +42,5 @@ query = [
     "SELECT * FROM railway\nWHERE origin = 'Beijing'\n  AND destination = 'Hangzhou'\n  AND DATE(departure_time) = '2023-07-04';",
     "SELECT * FROM railway\nWHERE origin = 'Hangzhou'\n  AND destination = 'Shanghai'\n  AND DATE(departure_time) = '2023-07-07';"]
 print(query_database(query))
+
+print(query_database(["INSERT INTO railway (origin, destination, departure_time, arrival_time, price) VALUES ('Shanghai', 'Beijing', '2023-07-01 08:00:00', '2023-07-01 12:00:00', 500);"]))

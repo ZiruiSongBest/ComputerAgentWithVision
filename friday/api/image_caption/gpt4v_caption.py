@@ -1,9 +1,10 @@
 from openai import OpenAI
 import os
 
-
-os.environ["OPENAI_API_KEY"] = ""
-os.environ["OPENAI_ORGANIZATION"] = ""
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_ORGANIZATION = os.getenv("OPENAI_ORGANIZATION")
+# os.environ["OPENAI_API_KEY"] = ""
+# os.environ["OPENAI_ORGANIZATION"] = ""
 
 class ImageCaptionTool:
     def __init__(self) -> None:

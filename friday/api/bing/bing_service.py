@@ -4,9 +4,13 @@ from typing import Optional
 # from .bing_api import BingAPI
 from .bing_api_v2 import BingAPIV2
 from .image_search_api import ImageSearchAPI
+from dotenv import load_dotenv
 import tiktoken
+import os
 
-BING_API = ""  # set bing API
+load_dotenv()
+
+BING_API = os.getenv("BING_API")
 
 
 # 计算网页内容对gpt4来说的token数，如果token太多就用3.5做摘要或者用向量数据库检索最相关的片段
