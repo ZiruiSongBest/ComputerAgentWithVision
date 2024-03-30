@@ -19,7 +19,7 @@ def main():
     parser.add_argument('--score', type=int, default=8, help='critic score > score => store the tool')
     args = parser.parse_args()
 
-    if os.path.exists(args.logging_filedir):
+    if args.logging_filedir != 'log' and os.path.exists(args.logging_filedir):
         return
 
     logging_logger = Logger(log_dir=args.logging_filedir, log_filename=args.logging_filename, log_prefix=args.logging_prefix)
@@ -41,7 +41,7 @@ def main():
         description = action_node.description
         pre_tasks_info = planning_agent.get_pre_tasks_info(action)
         type = planning_agent.action_node[planning_agent.execute_list[0]].type # '{"open_google_chrome": {"description": "Execute a system command to open Google Chrome on macOS.", "return_val": ["\\nNone\\n"]}}'
-        logging_logger.info("The current subtask is: {subtask}".format(subtask=description), title=f'Current {type} Task', color='green')
+        logging_logger.info("The current subtask is: {subtask}".format(subtask=description), title=f'Current {type} Task', color='red')
         
         # if type == 'Vision':
             # return_val = vision_executor.global_execute(task, action, action_node, pre_tasks_info)
@@ -60,7 +60,7 @@ def main():
                 with open(os.path.join(args.logging_filedir, 'result.txt'), 'a') as f:
                     f.write(f'{action}: {result} \n')
                 with open(os.path.join(args.logging_filedir, 'final_result.txt'), 'w') as f:
-                    f.write(f'{action}: {result} \n')
+                    f.write(f'{action}: {result.strip()} \n')
             planning_agent.update_action(action, result, relevant_code, True, type)
             planning_agent.execute_list.remove(action)
 

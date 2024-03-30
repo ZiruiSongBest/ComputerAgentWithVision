@@ -164,3 +164,4 @@ pytest==8.1.1
 astor
 simpleeval
 arxiv
+python-multipart

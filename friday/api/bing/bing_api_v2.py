@@ -1,15 +1,15 @@
 import requests
-from langchain.utilities import BingSearchAPIWrapper
+from langchain_community.utilities import BingSearchAPIWrapper
 from bs4 import BeautifulSoup
 from typing import Tuple
 from enum import Enum
 from dotenv import load_dotenv
 from .web_loader import WebPageLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
 from langchain.chains.summarize import load_summarize_chain
-from langchain.llms import OpenAI
+from langchain_openai import OpenAI
 import os
 
 load_dotenv()

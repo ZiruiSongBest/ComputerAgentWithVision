@@ -297,13 +297,13 @@ prompt = {
         You need to complete the code using the ToolRequestUtil tool to call the specified API and print the return value
         of the api. 
         ToolRequestUtil is a utility class, and the parameters of its 'request' method are described as follows:
-        def request(self, api_path, method, params=None, content_type=None):
+        def request(self, api_path, method, params=None, content_type):
             """
             :param api_path: the path of the API
             :param method: get/post
             :param params: the parameters of the API, can be None.You cannot pass files to 'params' parameter.All files should be passed to 'files' parameter. 
             :param files: files to be uploaded, can be None.Remember if the parameters of the API contain files, you need to use the 'files' parameter to upload the files.
-            :param content_type: the content_type of api, e.g., application/json, multipart/form-data, can be None, you should pass in content_type=None by default if you don't have content_type
+            :param content_type: the content_type of api, e.g., application/json, multipart/form-data, can be None, you should pass in content_type!!!!!!! For example, if you read that 'request_body_format': 'multipart/form-data', you must explicitly pass 'content_type' as 'multipart/form-data'.
             :return: the response from the API
             """
         Please begin your code completion:

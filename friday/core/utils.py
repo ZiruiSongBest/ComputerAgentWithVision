@@ -193,7 +193,7 @@ def get_open_api_description_pair():
 
 def get_open_api_doc_path():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    open_api_path = os.path.join(script_dir, 'openapi.json')
+    open_api_path = os.path.join(script_dir, 'openapi2.json')
     return open_api_path
 
     

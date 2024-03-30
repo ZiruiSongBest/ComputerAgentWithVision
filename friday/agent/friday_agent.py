@@ -716,24 +716,33 @@ class ExecutionModule(BaseAgent):
         return info
     
     def generate_call_api_format_message(self, tool_sub_task, tool_api_path, context="No context provided."):
+        self.logging.warn(self.generate_openapi_doc_2(tool_api_path), title='OpenAPI Doc')
         self.sys_prompt = self.prompt['_SYSTEM_TOOL_USAGE_PROMPT'].format(
-            openapi_doc = json.dumps(self.generate_openapi_doc(tool_api_path)),
+            openapi_doc = json.dumps(self.generate_openapi_doc_2(tool_api_path)),
             tool_sub_task = tool_sub_task,
             context = context
         )
+        self.logging.info("************************<openapi_doc>**************************")
+        self.logging.info(self.sys_prompt, title='OpenAPI Doc', color='gray')
+        
         self.user_prompt = self.prompt['_USER_TOOL_USAGE_PROMPT']
         self.message = [
             {"role": "system", "content": self.sys_prompt},
             {"role": "user", "content": self.user_prompt},
         ]
+        self.logging.info(self.message, title='API Call', color='gray')
         return self.llm.chat(self.message)
     
+    def generate_openapi_doc_2(self, tool_api_path):
+        return self.extract_api_details(self.open_api_doc, tool_api_path)
+        
     def generate_openapi_doc(self, tool_api_path):
         """
         Format openapi document.
         """
         # init current api's doc
         curr_api_doc = {}
+        json_utils.save_json(self.open_api_doc, 'openapi_doc.json', indent=4)
         curr_api_doc["openapi"] = self.open_api_doc["openapi"]
         curr_api_doc["info"] = self.open_api_doc["info"]
         curr_api_doc["paths"] = {}
@@ -767,6 +776,21 @@ class ExecutionModule(BaseAgent):
             api_params_schema_ref = findptr["requestBody"]["content"]["multipart/form-data"]["schema"]["allOf"][0]["$ref"]
         if api_params_schema_ref != None and api_params_schema_ref != "":
             curr_api_doc["components"]["schemas"][api_params_schema_ref.split('/')[-1]] = self.open_api_doc["components"]["schemas"][api_params_schema_ref.split('/')[-1]]
+        
+        # new_api_doc = {}
+        # new_api_doc["path"] = tool_api_path
+        # method = self.open_api_doc["paths"][tool_api_path][0]
+        # if "get" in self.open_api_doc["paths"][tool_api_path]:
+        #     method  = "get"
+        # elif "post" in self.open_api_doc["paths"][tool_api_path]:
+        #     method  = "post"
+        # new_api_doc['method'] = method
+        # new_api_doc["api_summary"] = curr_api_doc['paths'][tool_api_path][method]['summary']
+        # for key, value in curr_api_doc['paths'][tool_api_path][method]["requestBody"]["content"]: # content type
+        #     new_api_doc["contentType"] = key
+        # new_api_doc["contentType"] = curr_api_doc['paths'][tool_api_path][method]["requestBody"]["content"]
+        # details = curr_api_doc['paths'][tool_api_path][method]
+        # new_api_doc["Request Body Format"] = list(details['requestBody']['content'].keys())[0]
         return curr_api_doc
 
     def extract_API_Path(self, text):
@@ -793,6 +817,89 @@ class ExecutionModule(BaseAgent):
         # Remove enclosing quotes (single or double) from the paths
         stripped_paths = [path.strip("'\"") for path in paths]
         return stripped_paths[0]
+    
+    def resolve_ref(self, json_data, ref):
+        """Resolves a $ref to its actual definition in the given JSON data."""
+        parts = ref.split('/')
+        result = json_data
+        for part in parts[1:]:  # Skip the first element as it's always '#'
+            result = result[part]
+        return result
+
+    def extract_types_from_schema_element(self, schema_element):
+        """从schema元素中提取类型信息，处理anyOf和直接定义的类型。"""
+        if 'type' in schema_element:
+            return [schema_element['type']]
+        elif 'anyOf' in schema_element:
+            types = []
+            for sub_element in schema_element['anyOf']:
+                types.extend(self.extract_types_from_schema_element(sub_element))
+            return types
+        else:
+            return ['unknown']
+
+    def extract_properties_from_schema(self, schema, json_data):
+        """递归地从schema中提取属性和类型信息，处理allOf、anyOf和$ref。"""
+        properties = {}
+        required = schema.get('required', [])
+
+        if 'allOf' in schema:
+            for item in schema['allOf']:
+                sub_properties, sub_required = self.extract_properties_from_schema(item, json_data)
+                properties.update(sub_properties)
+                required.extend(sub_required)
+        elif '$ref' in schema:
+            ref_schema = self.resolve_ref(json_data, schema['$ref'])
+            properties, required = self.extract_properties_from_schema(ref_schema, json_data)
+        else:
+            properties = schema.get('properties', {})
+
+        return properties, required
+
+    def extract_api_details(self, json_data, api_path):
+        api_details = json_data['paths'][api_path]
+        for method, details in api_details.items():
+            summary = details['summary']
+            parameters_information = []
+            request_body_format = None
+            
+            # 提取直接定义的参数
+            if 'parameters' in details:
+                for param in details['parameters']:
+                    parameter_info = {
+                        'name': param['name'],
+                        'in': param['in'],
+                        'required': param.get('required', False),
+                        'type': param['schema']['type'] if 'schema' in param else 'unknown'
+                    }
+                    parameters_information.append(parameter_info)
+            
+            # 处理requestBody（如果存在）
+            if 'requestBody' in details:
+                request_body_format = list(details['requestBody']['content'].keys())[0]
+                schema_info = details['requestBody']['content'][request_body_format]['schema']
+                
+                properties, required = self.extract_properties_from_schema(schema_info, json_data)
+                
+                for prop, prop_details in properties.items():
+                    types = self.extract_types_from_schema_element(prop_details)  # 提取参数可能的类型
+                    parameter_info = {
+                        'name': prop,
+                        'type': types,  # 参数可能有多种类型
+                        'required': prop in required
+                    }
+                    parameters_information.append(parameter_info)
+
+            api_details_dict = {
+                'api_path': api_path,
+                'method': method,
+                'summary': summary,
+                'parameters': parameters_information,
+                'request_body_format': request_body_format
+            }
+            
+            return api_details_dict
+
 
 
 

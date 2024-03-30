@@ -16,4 +16,4 @@ class Audio2TextTool:
             model="whisper-1",
             file=audio_file
         )
-        return response.texts
+        return response.text

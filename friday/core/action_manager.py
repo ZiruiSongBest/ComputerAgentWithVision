@@ -1,7 +1,7 @@
 import sqlite3
 import sys
 
-from langchain.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 from langchain.embeddings.openai import OpenAIEmbeddings
 import argparse
 import json
