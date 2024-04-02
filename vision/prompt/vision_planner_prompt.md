@@ -33,7 +33,7 @@ You are a helpful assistant, who read the previous executed task information, cu
         "description": "observe the screen, and answer what's the rating of IMDb on the page",
         "dependencies": ["input_search_content"],
         "type": "Observe",
-        "detail": ""
+        "detail": "What's the rating of IMDb on the page"
     }
 }
 ```

@@ -67,7 +67,7 @@ class PlanningModule(BaseAgent):
 
         # json_utils.save_json(json_utils.json_append(copy.deepcopy(response), 'task', task), f'friday_planned_response.json', indent=4)
         
-        self.logging.info(f"The overall response is: {response}", title='Original Response', color='gray')
+        # self.logging.info(f"The overall response is: {response}", title='Original Response', color='gray')
         decompose_json = self.extract_json_from_string(response)
         
         self.logging.write_json(decompose_json)
@@ -602,12 +602,22 @@ class ExecutionModule(BaseAgent):
         """
         Send task judge prompt to LLM and get JSON response.
         """
+        if len(code_output) > 2000:
+            code_output = code_output[:2000]
+            sys_prompt = self.prompt['_SYSTEM_TASK_JUDGE_SUMMARY_PROMPT']
+            user_prompt = "The code output is too long, only the first 2000 characters are displayed. \n" + code_output
+            summary_message = [
+                {"role": "system", "content": sys_prompt},
+                {"role": "user", "content": user_prompt},
+            ]
+            code_output = self.llm.chat(self.message)
+        
         next_action = json.dumps(next_action)
         sys_prompt = self.prompt['_SYSTEM_TASK_JUDGE_PROMPT']
         user_prompt = self.prompt['_USER_TASK_JUDGE_PROMPT'].format(
             current_code=current_code,
             task=task,
-            code_output=code_output,
+            code_output= "Because the output is too long, this is the summarization of code_output: " + code_output,
             current_working_dir=current_working_dir,
             working_dir=self.environment.working_dir,
             files_and_folders=files_and_folders,

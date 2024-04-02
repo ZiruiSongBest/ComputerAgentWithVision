@@ -3,7 +3,7 @@ import os
 from utils.logger import Logger
 from friday.agent.friday_agent import FridayAgent
 from friday.core.friday_executor import FridayExecutor
-# from vision.core.vision import Vision
+from vision.core.vision import Vision
 
 import dotenv
 
@@ -26,7 +26,7 @@ def main():
     friday_agent = FridayAgent(config_path=args.config_path, action_lib_dir=args.action_lib_path, logger=logging_logger)
     planning_agent = friday_agent.planner
     executor = FridayExecutor(planning_agent, friday_agent.executor, friday_agent.retriever, logging_logger, args.score)
-    # vision_executor = Vision(logger=logging_logger)
+    vision_executor = Vision(logger=logging_logger)
 
     task = 'Your task is: {0}'.format(args.query)
     if args.query_file_path != '':
@@ -43,10 +43,10 @@ def main():
         type = planning_agent.action_node[planning_agent.execute_list[0]].type # '{"open_google_chrome": {"description": "Execute a system command to open Google Chrome on macOS.", "return_val": ["\\nNone\\n"]}}'
         logging_logger.info("The current subtask is: {subtask}".format(subtask=description), title=f'Current {type} Task', color='red')
         
-        # if type == 'Vision':
-            # return_val = vision_executor.global_execute(task, action, action_node, pre_tasks_info)
-        # else:
-        return_val = executor.execute_task(task, action, action_node, pre_tasks_info)
+        if type == 'Vision':
+            return_val = vision_executor.global_execute(task, action, action_node, pre_tasks_info)
+        else:
+            return_val = executor.execute_task(task, action, action_node, pre_tasks_info)
         
         if return_val[0] == 'fail':
             break

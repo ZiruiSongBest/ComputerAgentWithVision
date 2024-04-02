@@ -133,7 +133,7 @@ class VisionPlanner:
                         "type": "image_url",
                         "image_url": {
                             "url": current_image_base64,    # 给出当前状态的截图
-                            "detail": "low"
+                            # "detail": "low"
                         }
                     },
                     {
