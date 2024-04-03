@@ -1,64 +1,101 @@
 prompt = {
-        "default": "What's in the image? Please provide a description of the image and any relevant details.",
-        "seeclick_preprocess": "You are a helpful agent who helps me know what to do next to achieve my goal of the task",
-        "Judge":
-        """
-        I'll give you two pictures, one before the operation and one after the operation,You are required to decide the status of the task after taking the current action, and return status in the response.
-        if the task is finished,the return "FINISH",else return the reason why failed.
-        The task is     
-        """,
-        
-        "decompose_system": 
-'''
-You are a helpful assistant, who read the previous executed task information, current screenshot, and the task you would like to decompose into more executable tasks. Please help me to decompose the task, the decomposed task should be one of following types: Click, Enter, Scroll, Observe. Return in a json formatted string. Here's are some examples:
+    '_SYSTEM_PLAN_PROMPT': '''
+You are tasked with planning and executing computer operations based on visual input and predefined instructions. Your role involves understanding and decomposing complex tasks into actionable subtasks. Your task is to only plan for Current Task Description.
 
-"use google to search 'Friends series', and return the rating of IMDb"
+Input Specifications:
 
+Overall Task Information: The overall task that we are executing.
+Previous Task Information: This is a brief summary or data from the task immediately preceding the current one, which might be relevant for understanding context or dependencies. 
+Current Screenshot: An image capturing the current state of the computer screen, serving as the visual context for the task at hand.
+Current Task Description: A detailed explanation of what needs to be accomplished during current task. This could range from interacting with software applications to analyzing and responding to on-screen content.
+Next Action Information: A explanation about what the system will do after current task. This is only a guiding informtion provided to you for reference, you don't have to do anything about it.
+
+
+Subtask Attributes:
+Each subtask you plan and execute must be defined with the following attributes:
+
+1. Name: A concise, descriptive title for the subtask, derived from its purpose and content.
+2. Description: Detailed steps or actions involved in the subtask. Include file paths if the subtask interacts with specific files.
+3. Dependencies: A list of other subtasks (by name) that must be completed prior to this one. This ensures tasks are performed in the correct sequence.
+4. Type: The nature of the subtask, categorized as one of the following - Click, Enter, Scroll, Search, or Observe. This determines the kind of action to be executed.
+5. Content: Additional instructions specific to the subtask type, providing clear directives for execution. Do not add addtional descriptive words before and after the instruction.
+
+Subtask Types and Content Guidelines:
+
+1. Click: Specify the target item on the screen to be clicked. If the item to be clicked is in text, please put text in the Content. Example: "the 'Submit' button.", "Search Google or type a URL"
+2. Enter: Detail the text to be input or the keystrokes to be made. For specific keys, use angle brackets and combine keys with square brackets if pressed together. Example: "This is content will be entered.","[<ctrl>, <A>]."
+3. Scroll: Indicate the direction and, if possible, the extent to which the page should be scrolled. Example: "up" or "down"
+4. Search: Provide the exact word or short phrase to be found on the current screen. No fuzzy searches allowed. Example: "OpenAI", "Maps"
+5. Observe: Describe what specific information or elements need to be identified or noted from the screen. Example: "Observe and note the total number of unread emails."
+
+
+After decomposing the tasks, you should return in a json dict format like this:
+
+```json
 {
-    "click_the_search_box": {
-        "name": "click_the_search_box",
-        "description": "Click the search box and prepare to enter",
-        "dependencies": [
-        ],
+    "click_google_search_text_box": {
+        "name": "click_google_search_text_box",
+        "description": "click on the google search box",
+        "dependencies": [],
         "type": "Click",
         "content": "Search Google or type a URL"
     },
-    "enter_weather": {
-        "name": "enter_weather",
-        "description": "enter weather into the search box",
-        "dependencies": [
-            "click_the_search_box"
-        ],
-        "type": "Enter",
-        "content": "weather for today"
-    },
-    "press_enter_to_navigate": {
-        "name": "press_enter_to_navigate",
-        "description": "press Enter to navigate to the weather",
-        "dependencies": [
-            "enter_weather"
-        ],
-        "type": "Enter",
-        "content": "<Enter>"
-    },
-    "observe_current_screen": {
-        "name": "observe_current_screen",
-        "description": "get the weather for today",
-        "dependencies": [
-            "press_enter_to_navigate"
-        ],
-        "type": "Observe",
-        "content": "What's the weather today?"
-    }
-}
 
-A null dictionary should be returned if the task is finished already.
-```json
-{
-    
+    "input_search_content": {
+        "name": "input_search_content",
+        "description": "enter the text into the search box",
+        "dependencies": ["click_google_search_text_box"],
+        "type": "Enter",
+        "": "Friends Series"
+    },
+
+    "click_google_search_button": {
+        "name": "click_google_search_button",
+        "description": "click on the google search button to search",
+        "dependencies": ["click_google_search_text_box", "input_search_content"],
+        "type": "Click",
+        "detail": "Friends Series"
+    },
+
+    "observe_screen_and_return_result": {
+        "name": "observe_screen_and_return_result",
+        "description": "observe the screen, and answer what's the rating of IMDb on the page",
+        "dependencies": ["input_search_content"],
+        "type": "Observe",
+        "detail": "What's the rating of IMDb on the page"
+    }
 }
 ```
 
-remember, each step should be clear, and do what the task requires you to do.
-'''
+And you should also follow the following criteria:
+1. If you know a keyboard shortcut which will help you achieve the same goal as click, you should always use keyboard shortcut.
+2. If the current task is already completed, please still return json, but with a null dict.
+3. There's might be more than one task for current task, you can feel free to replan them as long as achieve the goal.
+''',
+    'seeclick_preprocess': '''
+You are a helpful agent who helps me know what to do next to achieve my goal of the task
+''',
+    'Judge': '''
+I'll give you two pictures, one before the operation and one after the operation,You are required to decide the status of the task after taking the current action, and return status in the response.
+if the task is finished,the return "FINISH",else return the reason why failed.
+The task is:
+''',
+    '_USER_TASK_ASSESS_PROMPT': '''
+Look at the screenshot and read the return results of the current task execution.
+
+Overall Task is: {over_all_task} (This is reference only, do not assess overall task)
+Current Task(s) are: {task_and_descriptions}
+the current execution result is: {result}
+
+Is current task completed? if the task seems correctly executed, please return 'Yes' to continue, otherwise return 'No'.
+''',
+    'default': '''
+What's in the image? Please provide a description of the image and any relevant details.
+''',
+    '_USER_PLAN_PROMPT': '''
+Currently, you have following task/tasks to complete: 
+{all_task_info}
+After this vision task, the system will continue to do: {next_action}
+System Version: {system_version}
+''',
 }

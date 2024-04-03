@@ -1,0 +1,7 @@
+Look at the screenshot and read the return results of the current task execution.
+
+Overall Task is: {over_all_task} (This is reference only, do not assess overall task)
+Current Task(s) are: {task_and_descriptions}
+the current execution result is: {result}
+
+Is current task completed? if the task seems correctly executed, please return 'Yes' to continue, otherwise return 'No'.
