@@ -9,6 +9,32 @@ You should only respond with a reasoning process and a JSON result in the format
 5. Continuing with the example in 1, the format of the JSON data I want to get is as follows:
 ```json
 {
+    "download_pdf": {
+        "name": "download_pdf",
+        "description": "Download the PDF document from 'https://www.fao.org/3/ca8753en/ca8753en.pdf' and save it to the local file system.",
+        "dependencies": [],
+        "type": "Code"
+    },
+    "convert_pdf_to_text": {
+        "name": "convert_pdf_to_text",
+        "description": "Convert the downloaded PDF document into text for analysis.",
+        "dependencies": [
+            "download_pdf"
+        ],
+        "type": "Code"
+    },
+    "report_result": {
+        "name": "report_result",
+        "description": "answer the question: 'What is the difference between the number of times the word 'food' appears in the PDF document and the number of times the word 'agriculture' appears in the PDF document?'",
+        "dependencies": [
+            "convert_pdf_to_text"
+        ],
+        "type": "QA"
+    }
+}
+```
+```json
+{
   "data_overview": {
     "name": "data_overview",
     "description": "Load the dataset from '/mnt/data/d6059b3e-e1da-43b4-ac26-ecad2984909b.csv' to display the first few rows of the dataframe, in order to understand its structure and identify the relevant columns for analysis.",

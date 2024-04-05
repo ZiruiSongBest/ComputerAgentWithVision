@@ -1,0 +1,24 @@
+{
+    "read_story_file": {
+        "name": "read_story_file",
+        "description": "Open and read the content of the story text file located at '/Users/dylan/Desktop/1Res/osc/GAIA/2023/test/198ffd8f-6041-458d-bacc-fe49872cfa43.txt'.",
+        "dependencies": [],
+        "type": "Code"
+    },
+    "extract_rescue_info": {
+        "name": "extract_rescue_info",
+        "description": "Analyze the content of the story to identify the section that describes the protagonist's rescue of a noble's family member and the defeat of foes, focusing on how many foes were defeated.",
+        "dependencies": [
+            "read_story_file"
+        ],
+        "type": "QA"
+    },
+    "report_foes_defeated": {
+        "name": "report_foes_defeated",
+        "description": "Report the number of foes the protagonist defeated during the rescue as described in the story.",
+        "dependencies": [
+            "extract_rescue_info"
+        ],
+        "type": "QA"
+    }
+}

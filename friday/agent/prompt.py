@@ -348,6 +348,32 @@ You should only respond with a reasoning process and a JSON result in the format
 5. Continuing with the example in 1, the format of the JSON data I want to get is as follows:
 ```json
 {
+    "download_pdf": {
+        "name": "download_pdf",
+        "description": "Download the PDF document from 'https://www.fao.org/3/ca8753en/ca8753en.pdf' and save it to the local file system.",
+        "dependencies": [],
+        "type": "Code"
+    },
+    "convert_pdf_to_text": {
+        "name": "convert_pdf_to_text",
+        "description": "Convert the downloaded PDF document into text for analysis.",
+        "dependencies": [
+            "download_pdf"
+        ],
+        "type": "Code"
+    },
+    "report_result": {
+        "name": "report_result",
+        "description": "answer the question: 'What is the difference between the number of times the word 'food' appears in the PDF document and the number of times the word 'agriculture' appears in the PDF document?'",
+        "dependencies": [
+            "convert_pdf_to_text"
+        ],
+        "type": "QA"
+    }
+}
+```
+```json
+{
   "data_overview": {
     "name": "data_overview",
     "description": "Load the dataset from '/mnt/data/d6059b3e-e1da-43b4-ac26-ecad2984909b.csv' to display the first few rows of the dataframe, in order to understand its structure and identify the relevant columns for analysis.",
@@ -425,6 +451,7 @@ And you should also follow the following criteria:
 11. When decomposing subtasks, avoid including redundant information. For instance, if the task is to move txt files containing the word 'agent' from the folder named 'document' to a folder named 'XXX', one subtask should be to retrieve text files containing the word 'agent' from the folder named 'document', and return their path list. Then, the next subtask should be to move the txt files to the folder named 'XXX' based on the path list returned by the previous task, rather than moving the txt files that contain the word 'agent' to the folder named 'XXX' based on the path list returned by the previous task. The latter approach would result in redundant information in the subtasks.
 12. User's information provided you with an API List that includes the API path and their corresponding descriptions. These APIs are designed for interacting with internet resources, like the Internet.
 13. When decomposing subtasks, you need to pay attention to whether the current subtask involves obtaining data from internet resources, such as finding cat pictures on the Internet, retrieving information on a certain web page, etc., for these types of tasks you can choose API or Vision. It depends on the complexity of the task; if it's simple, you can use API to access data; however, if it's complex with multiple steps, you need to use Vision.
+14. Be aware of using API. If you are working with local file, you should not use API to access information.
 15. If the current subtask is an API task, the description of the task must include the API path of the specified API to facilitate my extraction through the special format of the API path. For example, if an API task is to use the "/tools/arxiv" API to find XXX, then the description of the task should be: "Use the '/tools/arxiv' API to search for XXX."
 16. Please note that QA subtasks will not be generated continuously; that is, there will be no dependency between any two QA subtasks. If you generate a vision task with QA, the Vision QA task should not be continuously with QA type either.
 17. A QA subtask can perform comprehension analysis tasks, such as content conversion and format transformation, information summarisation or analysis, answering academic questions, language translation, creative writing, logical reasoning based on existing information, and providing daily life advice and guidance, etc.
