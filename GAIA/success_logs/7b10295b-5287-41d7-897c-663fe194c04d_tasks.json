@@ -1,0 +1,32 @@
+{
+    "extract_letters": {
+        "name": "extract_letters",
+        "description": "Count the occurrences of each letter in the Letter Bank: {OAMFETIMPECRFSHTDNIWANEPNOFAAIYOOMGUTNAHHLNEHCME}.",
+        "dependencies": [],
+        "type": "Code"
+    },
+    "spell_first_sentence": {
+        "name": "spell_first_sentence",
+        "description": "Use the letters to spell out 'I am a penguin halfway to the moon', tracking used and remaining letters.",
+        "dependencies": [
+            "extract_letters"
+        ],
+        "type": "Code"
+    },
+    "attempt_spell_second_sentence": {
+        "name": "attempt_spell_second_sentence",
+        "description": "Attempt to spell 'The moon is made of cheese' with the remaining letters from 'spell_first_sentence' and identify missing or extra letters.",
+        "dependencies": [
+            "spell_first_sentence"
+        ],
+        "type": "Code"
+    },
+    "generate_change_list": {
+        "name": "generate_change_list",
+        "description": "Identify the letters that need to be changed to spell the second sentence and return them as a comma-separated, alphabetized list.",
+        "dependencies": [
+            "attempt_spell_second_sentence"
+        ],
+        "type": "Code"
+    }
+}
