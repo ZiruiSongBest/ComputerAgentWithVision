@@ -59,7 +59,7 @@ class PlanningModule(BaseAgent):
         Reinitialize the planning module.
         """
         self.action_num = 0
-        self.action_node = {}
+        # self.action_node = {}
         self.action_graph = defaultdict(list)
         self.execute_list = []
 

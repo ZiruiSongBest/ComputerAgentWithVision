@@ -1,0 +1,8 @@
+{
+    "simulate_card_manipulation": {
+        "name": "simulate_card_manipulation",
+        "description": "Simulate the described steps of card manipulation on the initial stack ['2 of clubs', '3 of hearts', 'King of spades', 'Queen of hearts', 'Jack of clubs', 'Ace of diamonds'] to determine the final top card.",
+        "dependencies": [],
+        "type": "Code"
+    }
+}
