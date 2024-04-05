@@ -1,0 +1,32 @@
+{
+    "read_converted_text_file": {
+        "name": "read_converted_text_file",
+        "description": "Read the content of '/Users/dylan/Desktop/1Res/osc/ComputerAgentWithVisionDev/working_dir/downloaded.txt' to extract its text for analysis.",
+        "dependencies": [],
+        "type": "Code"
+    },
+    "extract_forest_area_data": {
+        "name": "extract_forest_area_data",
+        "description": "Analyze the text content from 'read_converted_text_file' to find the forest area in millions of hectares for Brazil and Canada in the year 2020.",
+        "dependencies": [
+            "read_converted_text_file"
+        ],
+        "type": "QA"
+    },
+    "calculate_difference": {
+        "name": "calculate_difference",
+        "description": "Calculate the difference in forest area between Brazil and Canada in 2020 based on the data extracted by 'extract_forest_area_data'.",
+        "dependencies": [
+            "extract_forest_area_data"
+        ],
+        "type": "Code"
+    },
+    "format_result": {
+        "name": "format_result",
+        "description": "Format the calculated difference into a readable answer to the question of how many more millions of hectares of forest are in Brazil than in Canada in 2020.",
+        "dependencies": [
+            "calculate_difference"
+        ],
+        "type": "QA"
+    }
+}
