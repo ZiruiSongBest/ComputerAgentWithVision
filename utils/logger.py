@@ -61,7 +61,9 @@ class Logger():
         logger = logging.getLogger(self.log_prefix)
         logger.setLevel(self.level)
 
-        formatter = logging.Formatter(f'[{self.log_prefix}] %(asctime)s - %(levelname)s - %(message)s')
+        # formatter = logging.Formatter(f'[{self.log_prefix}] %(asctime)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(f'[{self.log_prefix}] %(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s')
+
         c_formatter = ColorFormatter(formatter._fmt)
 
         file_handler = logging.FileHandler(log_path)

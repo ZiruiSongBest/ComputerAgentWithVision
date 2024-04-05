@@ -20,6 +20,7 @@ coloredlogs==15.0.1
 colorama
 contourpy==1.2.0
 cv
+flask
 cycler==0.12.1
 dataclasses-json==0.6.3
 datasets==2.15.0

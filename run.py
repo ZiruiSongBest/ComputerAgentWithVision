@@ -33,9 +33,11 @@ def main():
         task = task + '\nThe path of the files you need to use: {0}'.format(args.query_file_path)
     
     executor.plan_task(task)
+    planed = 1
 
     # iter each subtask
     while planning_agent.execute_list:
+        overall_result = {}
         action = planning_agent.execute_list[0] # name, str
         action_node = planning_agent.action_node[action] # action_node: name, description, return_val, relevant_code, next_action, status, type, detail
         description = action_node.description
@@ -44,12 +46,23 @@ def main():
         logging_logger.info("The current subtask is: {subtask}".format(subtask=description), title=f'Current {type} Task', color='red')
         
         if type == 'Vision':
-            return_val = vision_executor.global_execute(task, action, action_node, pre_tasks_info)
+            actions = []
+            action_nodes = []
+            for execute_action in planning_agent.execute_list:
+                if planning_agent.action_node[execute_action].type == 'Vision':
+                    actions.append(execute_action)
+                    action_nodes.append(planning_agent.action_node[execute_action])
+                    planning_agent.execute_list.remove(execute_action)
+                else:
+                    break
+            return_val = vision_executor.global_execute(task, actions, action_nodes, pre_tasks_info)
         else:
             return_val = executor.execute_task(task, action, action_node, pre_tasks_info)
         
-        if return_val[0] == 'fail':
-            break
+        if return_val[0] == 'fail' and planed < 3:
+            # planning_agent.redecompose_task(task, action)
+            executor.plan_task(task, replan=True)
+            planed += 1
         elif return_val[0] == 'replan':
             continue
         elif return_val[0] == 'success':

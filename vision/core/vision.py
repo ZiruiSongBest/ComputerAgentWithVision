@@ -40,12 +40,13 @@ class Vision:
         self.vision_executor = VisionExecutor(llm_provider=self.llm_provider, seeclick=self.seeclick, screen_helper=self.screen_helper, key_tool=self.key_tool, system_version=self.system_version, logger=self.logger)
         
     
-    def global_execute(self, task, action, action_node, pre_tasks_info):
-        next_action = action_node.next_action
-        description = action_node.description
+    def global_execute(self, task, actions, action_nodes, pre_tasks_info):
+        next_action = action_nodes[-1].next_action
+        
+        descriptions = [action.description for action in action_nodes]
 
-        self.logger.log(f"VISION Global task: {action}")
-        self.vision_planner.plan_task(pre_tasks_info, action, description)
+        self.logger.log(f"VISION Global task: {actions[0]}")
+        self.vision_planner.plan_task(task, pre_tasks_info, actions, descriptions, next_action)
         
         result = ''
         relevant_code = {}
@@ -59,16 +60,9 @@ class Vision:
             self.vision_planner.update_action(task_name, current_result, True, vision_type)
 
         result = self.vision_planner.get_pre_tasks_info('end', True)
-        is_success = self.vision_executor.observe(f"Is current task completed? Task is {task_name}: {description}. Look at the screenshot and read the return results of the execution, if the task seems correctly executed, please click 'Yes' to continue, otherwise click 'No'." + "\nthe current execution result is: " + result)
         
-        if 'yes' in is_success:
-            status = 'success'
-        else:
-            status = 'fail'
-        # elif: status cannot be down with vision:
-        #   is_success = 'replan'
-        
-        self.logger.info(result, title='Vision Task Result', color='green')
+        status = self.vision_planner.assess_current_task(task, actions, descriptions, result)
+        self.logger.info(status + result, title='Current Vision Task Result', color='green')
 
         return [status, result, relevant_code]
 
