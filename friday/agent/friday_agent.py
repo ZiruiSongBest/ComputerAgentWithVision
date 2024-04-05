@@ -11,7 +11,6 @@ from utils import json_utils
 import re
 import json
 from utils.logger import Logger
-import copy
 from pathlib import Path
 
 class FridayAgent(BaseAgent):
@@ -53,6 +52,16 @@ class PlanningModule(BaseAgent):
         self.action_graph = defaultdict(list)
         self.execute_list = []
         self.logging = logger
+        self.replan = False
+        
+    def re_init(self):
+        """
+        Reinitialize the planning module.
+        """
+        self.action_num = 0
+        self.action_node = {}
+        self.action_graph = defaultdict(list)
+        self.execute_list = []
 
     def decompose_task(self, task, action_description_pair):
         """
@@ -64,21 +73,51 @@ class PlanningModule(BaseAgent):
         files_and_folders = self.environment.list_working_dir()
         action_description_pair = json.dumps(action_description_pair)
         response = self.task_decompose_format_message(task, action_description_pair, files_and_folders)
+        decompose_json = self.extract_json_from_string(response)
 
         # json_utils.save_json(json_utils.json_append(copy.deepcopy(response), 'task', task), f'friday_planned_response.json', indent=4)
-        
         # self.logging.info(f"The overall response is: {response}", title='Original Response', color='gray')
-        decompose_json = self.extract_json_from_string(response)
         
         self.logging.write_json(decompose_json)
-        # json_utils.save_json(json_utils.json_append(copy.deepcopy(decompose_json), 'task', task), f'friday_planned_formatted.json', indent=4)
-        self.logging.info(f"{decompose_json}", title='Decompose Task', color='gray')
-
+        self.logging.info(f"{json.dumps(decompose_json, indent=4)}", title='Decomposed Task', color='gray')
         
-        # with open('testcase/planner_response_formatted.json') as f:
+        # with open('log/2024-04-03_14-04-41_task_sequence.json') as f:
         #     decompose_json = json.load(f)
         
         # Building action graph and topological ordering of actions
+        self.create_action_graph(decompose_json)
+        self.topological_sort()
+    
+    def redecompose_task(self, overall_task, action_description_pair, current_task):
+        """
+        Implement task disassembly logic.
+        """
+        self.replan = True
+        
+        # Gather relevant information for replanning
+        pre_execute_list = self.execute_list
+        pre_task_information = {}
+        for task in self.action_graph[current_task]:
+            task_info = {
+                "description" : self.action_node[task].description,
+                "return_val" : self.action_node[task].return_val
+            }
+            pre_task_information[task] = task_info
+        pre_task_information[current_task] = {
+            "description" : self.action_node[task].description,
+            "return_val" : self.action_node[task].return_val
+        }
+        
+        pre_task_information = json.dumps(pre_task_information)
+        files_and_folders = self.environment.list_working_dir()
+        
+        self.re_init()
+        response = self.task_redecompose_format_message(overall_task, action_description_pair, files_and_folders, pre_task_information)
+        decompose_json = self.extract_json_from_string(response)
+        if 'No JSON data found in the string.' in decompose_json:
+            return
+        self.logging.write_json(decompose_json)
+        self.logging.info(f"{json.dumps(decompose_json, indent=4)}", title='REdecompose Task', color='gray')
         self.create_action_graph(decompose_json)
         self.topological_sort()
 
@@ -135,6 +174,28 @@ class PlanningModule(BaseAgent):
         ]
         
         # json_utils.save_json(json_utils.json_append(copy.deepcopy(self.message), 'task', task), f'friday_planner_plan.json', indent=4)
+        
+        return self.llm.chat(self.message)
+    
+    def task_redecompose_format_message(self, task, action_list, files_and_folders, pre_task_info):
+        """
+        Send decompse task prompt to LLM and get task list.
+        """
+        api_list = get_open_api_description_pair()
+        sys_prompt = self.prompt['_SYSTEM_TASK_REDECOMPOSE_PROMPT']
+        user_prompt = self.prompt['_USER_TASK_REDECOMPOSE_PROMPT'].format(
+            system_version=self.system_version,
+            task=task,
+            action_list = action_list,
+            api_list = api_list,
+            working_dir = self.environment.working_dir,
+            files_and_folders = files_and_folders,
+            pre_task_info = pre_task_info
+        )
+        self.message = [
+            {"role": "system", "content": sys_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
         
         return self.llm.chat(self.message)
       
@@ -258,6 +319,8 @@ class PlanningModule(BaseAgent):
                 "description" : self.action_node[task].description,
                 "return_val" : self.action_node[task].return_val
             }
+            if self.action_node[task]._relevant_code:
+                task_info["relevant_code"] = self.action_node[task]._relevant_code
             pre_tasks_info[task] = task_info
         pre_tasks_info = json.dumps(pre_tasks_info)
         return pre_tasks_info

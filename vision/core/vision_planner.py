@@ -50,7 +50,7 @@ class VisionPlanner:
             "content": self.templates.get(template_name, "default")
         }]
     
-    def plan_task(self, pre_task_info, task_name, task_description):
+    def plan_task(self, task, pre_task_info, task_names, task_descriptions, next_task):
         '''
             Get a task from Friday, and plan the vision task with vision planner
         
@@ -60,14 +60,15 @@ class VisionPlanner:
         Returns:
             None
         '''
-        
-        plan_task_message = self.task_decompose_format_message(pre_task_info, task_name, task_description)
+        'Given the task and the information provided from the previous actions, it\'s clear that the initial approach to find the brand of the webcam used on the laptop embedded in the cupola of the ISS through API calls did not yield the specific information required. The content loaded from the Wikipedia page about the Cupola module on the ISS contains detailed information about the module itself but does not specify the brand of the webcam.\n\nSince the API approach has been exhausted without success, and considering the specificity of the information required, a Vision-based approach might be more suitable. This could involve visually identifying the webcam through images or videos available online that showcase the laptop setup within the Cupola. However, this task requires access to a vast array of visual data and the ability to recognize and identify specific hardware brands from images, which falls outside the capabilities provided here.\n\nGiven the constraints and the nature of the task, it\'s not feasible to accurately determine the brand of the webcam used on the laptop in the Cupola of the ISS with the available methods and information. Therefore, the appropriate response is:\n\n"I can\'t help."'
+        plan_task_message = self.task_decompose_format_message(task, pre_task_info, task_names, task_descriptions, next_task)
         
         # TESTCASE TEMP COMMENTED
-        response = self.llm_provider.create_completion(plan_task_message, max_tokens=1000)
+        response = self.llm_provider.create_completion(plan_task_message)
         self.logger.info(response)
         decomposed_tasks = self.extract_decomposed_tasks(response[0])
-        json_utils.save_json(json_utils.json_append(copy.deepcopy(decomposed_tasks), 'task', task_description), f'vision_planned_formatted.json', indent=4)
+        self.logger.info(json.dumps(decomposed_tasks, indent=4), title='Decomposed Tasks', color='green')
+        self.logger.save_json(decomposed_tasks, 'vision_planned_formatted.json')
         
         # with open("testcase/vision_plan_formatted3.json", "r") as f:
         #     decomposed_tasks = json.load(f)
@@ -84,7 +85,7 @@ class VisionPlanner:
             self.vision_tasks.append(task_name)
             self.vision_nodes[task_name] = ActionNode(task_name, task_description, task_type, task_deatil)
     
-    def task_decompose_format_message(self, pre_task_info, task_name, task_description):
+    def task_decompose_format_message(self, task, pre_task_info, task_names, task_descriptions, next_task):
         '''
             Send decompose task prompt to LLM and get task list.
             This compose of:
@@ -94,10 +95,20 @@ class VisionPlanner:
         '''
         
         # system_prompt = self.templates.get("plan_task", "default")
-        system_prompt = self.templates.get("decompose_system", "default")
+        system_prompt = self.templates.get("_SYSTEM_PLAN_PROMPT", "default")
+        user_prompt = self.templates.get("_USER_PLAN_PROMPT", "default")
+        all_tasks = ""
+        for task_name, task_description in zip(task_names, task_descriptions):
+            all_tasks += task_name + ": " + task_description + "\n"
         
         # user_prompt = self.templates.get("plan_task_user_prompt", "default")
-        user_prompt = f"Please help me to decompose the task: {task_name}, {task_description}. If the current task is already completed, please still return json, but with a null dict."
+        user_prompt = user_prompt.format(
+            # overall_task = task,
+            # pre_task_info = pre_task_info,
+            all_task_info = all_tasks,
+            next_action = next_task,
+            system_version = self.system_version
+        )
         
         current_image = self.screen_helper.capture()
         current_image_base64 = current_image['base64']
@@ -123,7 +134,7 @@ class VisionPlanner:
                 "content": [
                     {
                         "type": "text",
-                        "text": "previous task information: " + pre_task_info # 加入pre_task_info
+                        "text": f"Over all task goal: {task}\nprevious task information: {pre_task_info}" # 加入pre_task_info
                     },
                     {
                         "type": "text",
@@ -146,6 +157,30 @@ class VisionPlanner:
 
         json_utils.save_json(self.message, "decompose_task_message.json")
         return self.message
+    
+    def assess_current_task(self, task, task_names, task_descriptions, result):
+        '''
+            Access the current task from the vision task list.
+        '''
+        all_tasks = ""
+        for task_name, task_description in zip(task_names, task_descriptions):
+            all_tasks = task_name + ": " + task_description + "\n"
+
+        user_message = self.templates.get("_USER_TASK_ASSESS_PROMPT", "default")
+        user_message = user_message.format(
+            over_all_task = task,
+            task_and_descriptions = all_tasks,
+            result = result
+        )
+        response = self.vision_executor.observe(user_message)
+        
+        self.logger.info(response, title='Assess Current Task', color='green')
+        
+        if "Yes" in response:
+            return "success"
+        elif "No" in response:
+            return "fail"
+        return "replan"
 
     def task_replan_format_message(self, task: Dict[str, Any]) -> List[Dict[str, Any]]:
         # user_prompt = self.prompt['_USER_TASK_REPLAN_PROMPT'].format(

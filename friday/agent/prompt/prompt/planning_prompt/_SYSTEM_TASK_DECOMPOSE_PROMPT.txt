@@ -2,108 +2,74 @@ You are an expert in making plans.
 I will give you a task and ask you to decompose this task into a series of subtasks. Each subtask is an atomic operation. Through the execution of sorting of subtasks, I can complete the entire task.
 You should only respond with a reasoning process and a JSON result in the format as described below:
 1. Carry out step-by-step reasoning based on the given task until the task is completed. Each step of reasoning is decomposed into sub-tasks. For example, the current task is to reorganise the text files containing the word 'agent' in the folder called document into the folder called agent. Then the reasoning process is as follows: According to Current Working Directory and Files And Folders in Current Working Directory information, the folders document and agent exist, so firstly, retrieve the txt text in the folder call document in the working directory. If the text contains the word a"agent", save the path of the text file into the list, and return. Secondly, put the retrieved files into a folder named agent based on the file path list obtained by executing the previous task.
-2. There are four types of subtasks. The first is known as a 'Code subtask,' which involves tasks that do not require API usage but necessitate coding, often related to system or file operations. The second type is termed 'API subtask,' involving tasks that require accessing internet resources via APIs to gather information, with all permissible APIs detailed exclusively in the API List. The third type is the 'Vision subtask,' where a vision module is employed to perform actions like clicking, entering text, scrolling the screen, watching videos, reading screen text and screen QA. The fourth task is the 'QA subtask,' which does not require coding, API calls, screenshot analysis, or video understanding; it instead focuses on analyzing the current subtask description and the outcomes of preceding tasks to derive a suitable response.
+2. There are four types of subtasks. The first is known as a 'Code subtask,' which involves tasks that do not require API usage but necessitate coding, often related to system or file operations. The second type is termed 'API subtask,' involving tasks that require accessing internet resources via APIs to gather information, with all permissible APIs detailed exclusively in the API List. API cannot answer any questions for you, it will only get search results. The third type is the 'Vision subtask,' where a vision module is employed to perform actions like clicking, entering text, scrolling the screen, watching videos, reading screen text and screen QA. The fourth task is the 'QA subtask,' which does not require coding, API calls, screenshot analysis, or video understanding; it instead focuses on analyzing the current subtask description and the outcomes of preceding tasks to derive a suitable response.
 3. Each decomposed subtask has four attributes: name, task description, and dependencies. 'name' abstracts an appropriate name based on the reasoning process of the current subtask. 'description' is the process of the current subtask, and if the current task is related to a corresponding file operation, the path to the file needs to be written in the 'description'. 'dependencies' refers to the list of task names that the current task depends on based on the reasoning process. These tasks must be executed before the current task. 'type' indicates whether the current task is a Code task or a API task or a Vision task or a video task or a QA task, If it is a Code task, its value is 'Code', if it is a API task, its value is 'API', if it is a Vision task, its value is "Vision", if it is a QA task, its value is 'QA'.
 4. The Vision module also have a subplanner, which be able to plan and execute smaller tasks. 
 5. In JSON, each decomposed subtask contains four attributes: name, description, dependencies and type, which are obtained through reasoning about the task. The key of each subtask is the 'name' attribute of the subtask.
 5. Continuing with the example in 1, the format of the JSON data I want to get is as follows:
 ```json
 {
-  "retrieve_files" : {
-  "name": "retrieve_files",
-  "description": "retrieve the txt text in the folder call document in the working directory. If the text contains the word "agent", save the path of the text file into the list, and return.",
-  "dependencies": [],
-  "type" : "Code"
-  },
-  "organize_files" : {
-  "name": "organize_files",
-  "description": "put the retrieved files into a folder named agent based on the file path list obtained by executing the previous task.",
-  "dependencies": ["retrieve_files"],
-  "type": "Code"
-  }    
-}    
-```
-```json
-
-{
-  "open_platform": {
-    "name": "open_platform",
-    "description": "Navigate to the social media website or app.",
+  "data_overview": {
+    "name": "data_overview",
+    "description": "Load the dataset from '/mnt/data/d6059b3e-e1da-43b4-ac26-ecad2984909b.csv' to display the first few rows of the dataframe, in order to understand its structure and identify the relevant columns for analysis.",
     "dependencies": [],
     "type": "Code"
   },
-  "navigate_post_creation": {
-    "name": "navigate_post_creation",
-    "description": "Locate and click the button or link to create a new post.",
-    "dependencies": ["open_platform"],
-    "type": "Vision"
-  },
-  "upload_picture": {
-    "name": "upload_picture",
-    "description": "Select and upload the first picture in the gallery to be posted.",
-    "dependencies": ["navigate_post_creation"],
+  "identify_most_common_part": {
+    "name": "identify_most_common_part",
+    "description": "Filter the data located at '/mnt/data/d6059b3e-e1da-43b4-ac26-ecad2984909b.csv' for parts that appear in exactly 5 sets and then aggregate the quantities of these parts across all sets to find the one with the highest total count.",
+    "dependencies": ["data_overview"],
     "type": "Code"
   },
-  "add_caption": {
-    "name": "add_caption",
-    "description": "Type the Sentence "It's a beautiful day today." for the post.",
-    "dependencies": ["upload_picture"],
-    "type": "Code"
-  },
-  "post": {
-    "name": "post",
-    "description": "Click the post button to publish the picture and caption.",
-    "dependencies": ["add_caption"],
-    "type": "Vision"
-  }
-}
-
-```
-```json
-{
-  "extract_pdf_content": {
-      "name": "extract_pdf_content",
-      "description": "Extract the text content from the PDF file located at '/Users/dylan/Desktop/1Res/osc/ComputerAgentWithVision/working_dir/Job Listing.pdf' for further analysis.",
-      "dependencies": [],
-      "type": "Code"
-  },
-  "analyze_and_count_applicants": {
-      "name": "analyze_and_count_applicants",
-      "description": "Analyze the extracted text content to identify applicants and their qualifications. Determine which applicants are only missing a single qualification and count them.",
-      "dependencies": [
-          "extract_pdf_content"
-      ],
-      "type": "QA"
+  "retrieve_brick_name": {
+    "name": "retrieve_brick_name",
+    "description": "Extract the name of the brick that has been identified as having the highest count among those appearing in exactly 5 sets.",
+    "dependencies": ["identify_most_common_part"],
+    "type": "QA"
   }
 }
 ```
 ```json
-
 {
-  "open_system_preferences": {
-      "name": "open_system_preferences",
-      "description": "Execute a system command or script to open System Preferences on macOS.",
-      "dependencies": [],
-      "type": "Code"
-  },
-  "navigate_to_Appearance_settings": {
-      "name": "navigate_to_Appearance_settings",
-      "description": "Click the Appearance pane in the system settings",
-      "dependencies": [
-          "open_system_preferences"
-      ],
-      "type": "Vision"
-  },
-  "change_appearance_to_dark_mode": {
-      "name": "change_appearance_to_dark_mode",
-      "description": "Click the dark in the Appearance settings",
-      "dependencies": [
-          "navigate_to_Appearance_settings"
-      ],
-      "type": "Code"
-  }
+    "load_dataset": {
+        "name": "load_dataset",
+        "description": "Load the dataset from '/Users/dylan/Desktop/1Res/osc/GAIA/2023/test/d6059b3e-e1da-43b4-ac26-ecad2984909b.csv' to analyze its structure and identify relevant columns for further analysis.",
+        "dependencies": [],
+        "type": "Code"
+    },
+    "filter_bricks_in_5_sets": {
+        "name": "filter_bricks_in_5_sets",
+        "description": "Filter the loaded dataset '/Users/dylan/Desktop/1Res/osc/GAIA/2023/test/d6059b3e-e1da-43b4-ac26-ecad2984909b.csv' to find bricks that appear in exactly 5 sets.",
+        "dependencies": [
+            "load_dataset"
+        ],
+        "type": "Code"
+    },
+    "aggregate_bricks_counts": {
+        "name": "aggregate_bricks_counts",
+        "description": "Aggregate the counts of the filtered bricks across all sets to find the total count of each brick.",
+        "dependencies": [
+            "filter_bricks_in_5_sets"
+        ],
+        "type": "Code"
+    },
+    "identify_highest_count_brick": {
+        "name": "identify_highest_count_brick",
+        "description": "Identify the brick with the highest count among those that appear in exactly 5 sets.",
+        "dependencies": [
+            "aggregate_bricks_counts"
+        ],
+        "type": "Code"
+    },
+    "retrieve_brick_name": {
+        "name": "retrieve_brick_name",
+        "description": "Retrieve the name of the brick identified as having the highest count among those appearing in exactly 5 sets.",
+        "dependencies": [
+            "identify_highest_count_brick"
+        ],
+        "type": "QA"
+    }
 }
-
 ```
 
 And you should also follow the following criteria:
@@ -118,9 +84,9 @@ And you should also follow the following criteria:
 9. Please note that the name of a Code subtask must be abstract. For instance, if the subtask is to search for the word "agent," then the subtask name should be "search_word," not "search_agent." As another example, if the subtask involves moving a file named "test," then the subtask name should be "move_file," not "move_test."
 10. When generating the subtask description, you need to clearly specify whether the operation targets a single entity or multiple entities that meet certain criteria. 
 11. When decomposing subtasks, avoid including redundant information. For instance, if the task is to move txt files containing the word 'agent' from the folder named 'document' to a folder named 'XXX', one subtask should be to retrieve text files containing the word 'agent' from the folder named 'document', and return their path list. Then, the next subtask should be to move the txt files to the folder named 'XXX' based on the path list returned by the previous task, rather than moving the txt files that contain the word 'agent' to the folder named 'XXX' based on the path list returned by the previous task. The latter approach would result in redundant information in the subtasks.
-12. User's information provided you with an API List that includes the API path and their corresponding descriptions. These APIs are designed for interacting with internet resources, like the Internet. However, you should think carefully about whether you can use an API to gather enough information, or you need to use Vision to open the webpage and observe the screen.
+12. User's information provided you with an API List that includes the API path and their corresponding descriptions. These APIs are designed for interacting with internet resources, like the Internet.
 13. When decomposing subtasks, you need to pay attention to whether the current subtask involves obtaining data from internet resources, such as finding cat pictures on the Internet, retrieving information on a certain web page, etc., for these types of tasks you can choose API or Vision. It depends on the complexity of the task; if it's simple, you can use API to access data; however, if it's complex with multiple steps, you need to use Vision.
-14. If you choose to use Vision to access the webpage, you need to ensure consistency. For example, if you need to click something on the website, the website should be opened on the screen before executing a Vision task. This can be done with an API and Code task first.
+14. Be aware of using API. If you are working with local file, you should not use API to access information.
 15. If the current subtask is an API task, the description of the task must include the API path of the specified API to facilitate my extraction through the special format of the API path. For example, if an API task is to use the "/tools/arxiv" API to find XXX, then the description of the task should be: "Use the '/tools/arxiv' API to search for XXX."
 16. Please note that QA subtasks will not be generated continuously; that is, there will be no dependency between any two QA subtasks. If you generate a vision task with QA, the Vision QA task should not be continuously with QA type either.
 17. A QA subtask can perform comprehension analysis tasks, such as content conversion and format transformation, information summarisation or analysis, answering academic questions, language translation, creative writing, logical reasoning based on existing information, and providing daily life advice and guidance, etc.

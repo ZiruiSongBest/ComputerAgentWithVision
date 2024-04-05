@@ -35,14 +35,17 @@ class FridayExecutor:
         self.logging.info(f"The subtask result is: {json.dumps(output, indent=4)}", title='Execution Result', color='grey')
         return state
     
-    def plan_task(self, task):
+    def plan_task(self, task, replan=False):
         self.logging.info(task, title='Task', color='green')
         # relevant action
         retrieve_action_name = self.retrieve_agent.retrieve_action_name(task)
         retrieve_action_description_pair = self.retrieve_agent.retrieve_action_description_pair(retrieve_action_name)
 
         # task planner
-        self.planning_agent.decompose_task(task, retrieve_action_description_pair)
+        if not replan:
+            self.planning_agent.decompose_task(task, retrieve_action_description_pair)
+        else:
+            self.planning_agent.redecompose_task(task, retrieve_action_description_pair, self.planning_agent.execute_list[0])
     
     def execute_task(self, task, action, action_node, pre_tasks_info):
         # self.logging.debug("The current task is: {task}".format(task=task))
@@ -57,6 +60,8 @@ class FridayExecutor:
         
         if type == 'QA':
             result = self.handle_qa_type(pre_tasks_info, task, description)
+            if "I don't know" in result:
+                return ['fail', ]
         else:
             invoke = ''
             if type == 'API':
