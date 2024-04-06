@@ -158,30 +158,6 @@ class VisionPlanner:
         json_utils.save_json(self.message, "decompose_task_message.json")
         return self.message
     
-    def assess_current_task(self, task, task_names, task_descriptions, result):
-        '''
-            Access the current task from the vision task list.
-        '''
-        all_tasks = ""
-        for task_name, task_description in zip(task_names, task_descriptions):
-            all_tasks = task_name + ": " + task_description + "\n"
-
-        user_message = self.templates.get("_USER_TASK_ASSESS_PROMPT", "default")
-        user_message = user_message.format(
-            over_all_task = task,
-            task_and_descriptions = all_tasks,
-            result = result
-        )
-        response = self.vision_executor.observe(user_message)
-        
-        self.logger.info(response, title='Assess Current Task', color='green')
-        
-        if "Yes" in response:
-            return "success"
-        elif "No" in response:
-            return "fail"
-        return "replan"
-
     def task_replan_format_message(self, task: Dict[str, Any]) -> List[Dict[str, Any]]:
         # user_prompt = self.prompt['_USER_TASK_REPLAN_PROMPT'].format(
         #     current_task = current_task,

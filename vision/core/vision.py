@@ -61,7 +61,7 @@ class Vision:
 
         result = self.vision_planner.get_pre_tasks_info('end', True)
         
-        status = self.vision_planner.assess_current_task(task, actions, descriptions, result)
+        status = self.assess_current_task(task, actions, descriptions, result)
         self.logger.info(status + result, title='Current Vision Task Result', color='green')
 
         return [status, result, relevant_code]
@@ -84,3 +84,27 @@ class Vision:
             current_result = self.vision_executor.observe(content)
         
         return current_result
+    
+    def assess_current_task(self, task, task_names, task_descriptions, result):
+        '''
+            Access the current task from the vision task list.
+        '''
+        all_tasks = ""
+        for task_name, task_description in zip(task_names, task_descriptions):
+            all_tasks = task_name + ": " + task_description + "\n"
+
+        user_message = self.vision_planner.templates.get("_USER_TASK_ASSESS_PROMPT", "default")
+        user_message = user_message.format(
+            over_all_task = task,
+            task_and_descriptions = all_tasks,
+            result = result
+        )
+        response = self.vision_executor.observe(user_message)
+        
+        self.logger.info(response, title='Assess Current Task', color='green')
+        
+        if "Yes" in response:
+            return "success"
+        elif "No" in response:
+            return "fail"
+        return "replan"
