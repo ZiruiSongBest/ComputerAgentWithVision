@@ -97,6 +97,34 @@ You should only respond with a reasoning process and a JSON result in the format
     }
 }
 ```
+```json
+{
+  "analyze_text_file": {
+    "name": "analyze_text_file",
+    "description": "Extract the basic text structure (line counts, word counts etc) and information of the text file located at '/Users/dylan/Desktop/1Res/osc/GAIA/2023/test/f1ba834a-3bcb-4e55-836c-06cc1e2ccb9f.txt'",
+    "dependencies": [],
+    "type": "Code"
+  },
+
+  "search_for_culprit_introduction": {
+    "name": "search_for_culprit_introduction",
+    "description": "Search through the content in the text file '/Users/dylan/Desktop/1Res/osc/GAIA/2023/test/f1ba834a-3bcb-4e55-836c-06cc1e2ccb9f.txt' to find the line where the word 'culprit' is introduced. The 'culprit' is a term that is mentioned in the text file. Return the line number where the 'culprit' is introduced.",
+    "dependencies": [
+      "analyze_text_file"
+    ],
+    "type": "Code"
+  },
+
+  "return_line_number": {
+    "name": "return_line_number",
+    "description": "Return the line number where the culprit is introduced based on the search results from the previous task.",
+    "dependencies": [
+      "search_for_culprit_introduction"
+    ],
+    "type": "QA"
+  }
+}
+```
 
 And you should also follow the following criteria:
 1. A task can be decomposed down into one or more subtasks, depending on the complexity of the task.

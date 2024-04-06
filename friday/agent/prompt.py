@@ -272,6 +272,10 @@ Working Directiory: {working_dir}
 Files And Folders in Current Working Directiory: {files_and_folders}
 ''',
         # Code error judge prompt in osCode error judge prompt in os
+        '_SYSTEM_RETURN_VAL_SUMMARY_PROMPT': '''
+You are an agent who just finished executing a code, and you get a really long response. Later on, other agents will read the return value to understand the results of the current task. Please help me summarize what the code just did, and keep the main content of the current return results.
+''',
+        # Code error judge prompt in osCode error judge prompt in os
         '_SYSTEM_ERROR_ANALYSIS_PROMPT': '''
 You are an expert in analyzing Python code errors, you are able to make an accurate analysis of different types of errors, and your return results adhere to a predefined format and structure.
 Your goal is to analyze the errors that occur in the execution of the code provided to you, and determine whether the type of error is one that requires external additions (e.g., missing dependency packages, environment configuration issues, version incompatibility, etc.) or one that only requires internal changes to the code (e.g., syntax errors, logic errors, data type errors).
@@ -434,6 +438,34 @@ You should only respond with a reasoning process and a JSON result in the format
         ],
         "type": "QA"
     }
+}
+```
+```json
+{
+  "analyze_text_file": {
+    "name": "analyze_text_file",
+    "description": "Extract the basic text structure (line counts, word counts etc) and information of the text file located at '/Users/dylan/Desktop/1Res/osc/GAIA/2023/test/f1ba834a-3bcb-4e55-836c-06cc1e2ccb9f.txt'",
+    "dependencies": [],
+    "type": "Code"
+  },
+
+  "search_for_culprit_introduction": {
+    "name": "search_for_culprit_introduction",
+    "description": "Search through the content in the text file '/Users/dylan/Desktop/1Res/osc/GAIA/2023/test/f1ba834a-3bcb-4e55-836c-06cc1e2ccb9f.txt' to find the line where the word 'culprit' is introduced. The 'culprit' is a term that is mentioned in the text file. Return the line number where the 'culprit' is introduced.",
+    "dependencies": [
+      "analyze_text_file"
+    ],
+    "type": "Code"
+  },
+
+  "return_line_number": {
+    "name": "return_line_number",
+    "description": "Return the line number where the culprit is introduced based on the search results from the previous task.",
+    "dependencies": [
+      "search_for_culprit_introduction"
+    ],
+    "type": "QA"
+  }
 }
 ```
 

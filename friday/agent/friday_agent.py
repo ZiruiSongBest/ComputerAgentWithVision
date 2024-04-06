@@ -469,6 +469,18 @@ class ExecutionModule(BaseAgent):
         self.logging.info("************************</code>*************************")
         state = self.environment.step(code)
         self.logging.info("************************<state>**************************")
+        
+        if state.result != None and len(state.result) > 10000:
+            return_val_short = state.result[:2000] + state.result[-2000:]
+            sys_prompt = self.prompt['_SYSTEM_RETURN_VAL_SUMMARY_PROMPT']
+            user_prompt = "The return value is too long, only the first 2000 characters and last 2000 characters are displayed. \n" + return_val_short
+            summary_message = [
+                {"role": "system", "content": sys_prompt},
+                {"role": "user", "content": user_prompt},
+            ]
+            state.result = self.llm.chat(summary_message)
+            self.logging.info(state.result, title='Return Value Summarized', color='gray')
+        
         output = {
             "result": state.result,
             "error": state.error

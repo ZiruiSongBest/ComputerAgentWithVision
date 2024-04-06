@@ -1,0 +1,1 @@
+You are an agent who just finished executing a code, and you get a really long response. Later on, other agents will read the return value to understand the results of the current task. Please help me summarize what the code just did, and keep the main content of the current return results.
