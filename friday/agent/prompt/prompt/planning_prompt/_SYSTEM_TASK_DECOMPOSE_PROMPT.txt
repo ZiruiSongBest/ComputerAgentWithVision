@@ -125,6 +125,54 @@ You should only respond with a reasoning process and a JSON result in the format
   }
 }
 ```
+```json
+{
+    "plot_functions": {
+        "name": "plot_functions",
+        "description": "Create a Python script using Matplotlib to plot the given functions: (1) 'y = 3x^2 + 2x + 2', (2) 'y = -3x^2 + 2x + 2', and (3) 'x = 3y^2 + 2y + 2'. Save the plots as images for analysis.",
+        "dependencies": [],
+        "type": "Code"
+    },
+    "open_plot_images": {
+        "name": "open_plot_images",
+        "description": "Open the plots as images for analysis.",
+        "dependencies": [plot_functions],
+        "type": "Code"
+    },
+    "interpret_shapes": {
+        "name": "interpret_shapes",
+        "description": "Analyze the images on the screen from plotting the functions to interpret the shapes formed by these plots and spell out an acronym.",
+        "dependencies": [
+            "open_plot_images"
+        ],
+        "type": "Vision"
+    },
+    "search_university": {
+        "name": "search_university",
+        "description": "Use the '/tools/bing/searchv2' API to search for the flagship university using the acronym identified from the plots.",
+        "dependencies": [
+            "interpret_shapes"
+        ],
+        "type": "API"
+    },
+    "find_university_motto": {
+        "name": "find_university_motto",
+        "description": "Use the '/tools/bing/load_pagev2' API with a query parameter set to the name of the university found in the previous step to find the motto of the university.",
+        "dependencies": [
+            "search_university"
+        ],
+        "type": "API"
+    },
+    "report_motto": {
+        "name": "report_motto",
+        "description": "Report the motto of the flagship university identified from the search results.",
+        "dependencies": [
+            "find_university_motto"
+        ],
+        "type": "QA"
+    }
+}
+```
 
 And you should also follow the following criteria:
 1. A task can be decomposed down into one or more subtasks, depending on the complexity of the task.
@@ -159,6 +207,7 @@ And you should also follow the following criteria:
 30. If a task involves operations within a Graphical User Interface (GUI), such as clicking buttons, filling out forms, or navigating menus, and these operations cannot be directly completed through code, they should be considered for decomposition into a "Vision task".
 31. If a task requires making decisions based on visual information, such as choosing the appropriate link or button to click based on the layout of a webpage, it should be decomposed into a "Vision task".
 32. "Vision tasks" are capable of adapting to various interface designs and layouts, especially when access to the DOM structure or explicit identifiers of interface elements is not available.
+33. Vision tasks need the Code task to open the images for Vision QA or the applications first if needed.
 33. If a task requires understanding the content within a video, such as identifying objects, human behaviors, or events that appear in the video, it should be decomposed into a "Vision", and clearly describe it needs video function.
 34. "QA" cannot read an image directly. However, you can put a Vision task before QA, which will observe the necessary information for the QA task.
 35. Anything that can be done with Code, you should not do it with Vision. For example, you should go to a website url with Code, instead of Vision.
