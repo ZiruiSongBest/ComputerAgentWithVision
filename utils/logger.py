@@ -97,5 +97,5 @@ class Logger():
     def debug(self, message, title="", color="green"):
         self.log(message, logging.DEBUG, title, color)
 
-    def write_json(self, message):
-        json_utils.save_json(message, file_name='task_sequence.json', file_path=self.log_dir, indent=4)
+    def write_json(self, message, file_name='task_sequence.json'):
+        json_utils.save_json(message, file_name=file_name, file_path=self.log_dir, indent=4)

@@ -68,7 +68,7 @@ class VisionPlanner:
         self.logger.info(response)
         decomposed_tasks = self.extract_decomposed_tasks(response[0])
         self.logger.info(json.dumps(decomposed_tasks, indent=4), title='Decomposed Tasks', color='green')
-        self.logger.save_json(decomposed_tasks, 'vision_planned_formatted.json')
+        self.logger.write_json(decomposed_tasks, 'vision_planned_formatted.json')
         
         # with open("testcase/vision_plan_formatted3.json", "r") as f:
         #     decomposed_tasks = json.load(f)

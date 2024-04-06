@@ -1,0 +1,32 @@
+{
+    "open_excel_file": {
+        "name": "open_excel_file",
+        "description": "Open the Excel file located at '/Users/dylan/Desktop/1Res/osc/GAIA/2023/test/cbdb17dc-62d9-4463-b648-2eaacfeba4e5.xlsx' to access its content.",
+        "dependencies": [],
+        "type": "Code"
+    },
+    "extract_colored_cells": {
+        "name": "extract_colored_cells",
+        "description": "Extract information about which cells are colored in the Excel file '/Users/dylan/Desktop/1Res/osc/GAIA/2023/test/cbdb17dc-62d9-4463-b648-2eaacfeba4e5.xlsx'.",
+        "dependencies": [
+            "open_excel_file"
+        ],
+        "type": "Code"
+    },
+    "interpret_colored_cells_pattern": {
+        "name": "interpret_colored_cells_pattern",
+        "description": "Interpret the pattern formed by the colored cells to determine the number they represent.",
+        "dependencies": [
+            "extract_colored_cells"
+        ],
+        "type": "QA"
+    },
+    "report_number": {
+        "name": "report_number",
+        "description": "Report the number identified from the pattern of colored cells in the Excel file.",
+        "dependencies": [
+            "interpret_colored_cells_pattern"
+        ],
+        "type": "QA"
+    }
+}
