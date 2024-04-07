@@ -55,6 +55,7 @@ def main():
                     planning_agent.execute_list.remove(execute_action)
                 else:
                     break
+            planning_agent.execute_list.insert(0, action)
             return_val = vision_executor.global_execute(task, actions, action_nodes, pre_tasks_info)
         else:
             return_val = executor.execute_task(task, action, action_node, pre_tasks_info)

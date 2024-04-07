@@ -516,6 +516,34 @@ You should only respond with a reasoning process and a JSON result in the format
     }
 }
 ```
+```json
+{
+  "search_game_10_first_move": {
+    "name": "search_game_10_first_move",
+    "description": "Find the first move made in Game 10 of the World Chess Championship match won by Bobby Fischer using algebraic notation. This task may involve using an API or Vision to search through historical records or documents.",
+    "dependencies": [],
+    "type": "API"
+  },
+  "find_milton_bradley_1990_rules": {
+    "name": "find_milton_bradley_1990_rules",
+    "description": "Locate and understand the Milton Bradley game rules from 1990 that are relevant to the game move and the grid.",
+    "dependencies": [],
+    "type": "API"
+  },
+  "open_game_grid_image": {
+    "name": "open_game_grid_image",
+    "description": "Open the game grid image located at '/Users/dylan/Desktop/1Res/osc/GAIA/2023/test/7674ee67-d671-462f-9e51-129944749a0a.png' for analysis.",
+    "dependencies": [],
+    "type": "Code"
+  },
+  "analyze_game_grid": {
+    "name": "analyze_game_grid",
+    "description": "Determine which piece on the Battleship grid would be hit based on the chess move, following the rules of Battleship as defined by Milton Bradley in 1990.",
+    "dependencies": ["search_game_10_first_move", "find_milton_bradley_1990_rules", "open_game_grid_image"],
+    "type": "Vision"
+  }
+}
+```
 
 And you should also follow the following criteria:
 1. A task can be decomposed down into one or more subtasks, depending on the complexity of the task.
@@ -534,6 +562,7 @@ And you should also follow the following criteria:
 14. Be aware of using API. If you are working with local file, you should not use API to access information.
 15. If the current subtask is an API task, the description of the task must include the API path of the specified API to facilitate my extraction through the special format of the API path. For example, if an API task is to use the "/tools/arxiv" API to find XXX, then the description of the task should be: "Use the '/tools/arxiv' API to search for XXX."
 16. Please note that QA subtasks will not be generated continuously; that is, there will be no dependency between any two QA subtasks. If you generate a vision task with QA, the Vision QA task should not be continuously with QA type either.
+16. Two QA tasks should not be together, it means QA tasks should not be continuous.
 17. A QA subtask can perform comprehension analysis tasks, such as content conversion and format transformation, information summarisation or analysis, answering academic questions, language translation, creative writing, logical reasoning based on existing information, and providing daily life advice and guidance, etc.
 18. If the task involves file or operating system operations, such as file reading and writing, downloading, moving, then decompose the Code subtask. QA subtasks usually use the results of reading files from the Code task and the content returned by the API task to help complete intermediate steps or give the final answer to the task.
 19. If the task involves operating keyboard and mouse input, such as click the search button, and click the first video, and type some words, then decompose the Vision subtask. If the task requires the observe the screenshot to obtain vision information, such as observe the website, click the picture on the website, plan how to finish the "Task" need vision information. Vision task needs usually can't be finished by QA/API/Code task. It uses the screenshot's vision information to plan and finish the subtask.

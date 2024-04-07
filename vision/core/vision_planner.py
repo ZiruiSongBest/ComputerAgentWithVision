@@ -32,6 +32,8 @@ class VisionPlanner:
         
         # variables
         self.action_num = 0
+        self.replan_count = 0
+        self.reflection = None
         self.messages: List[Dict[str, Any]] = []
         self.system_version = system_version
         self.vision_tasks = [] # list of task names, execute_list
@@ -61,7 +63,10 @@ class VisionPlanner:
             None
         '''
         'Given the task and the information provided from the previous actions, it\'s clear that the initial approach to find the brand of the webcam used on the laptop embedded in the cupola of the ISS through API calls did not yield the specific information required. The content loaded from the Wikipedia page about the Cupola module on the ISS contains detailed information about the module itself but does not specify the brand of the webcam.\n\nSince the API approach has been exhausted without success, and considering the specificity of the information required, a Vision-based approach might be more suitable. This could involve visually identifying the webcam through images or videos available online that showcase the laptop setup within the Cupola. However, this task requires access to a vast array of visual data and the ability to recognize and identify specific hardware brands from images, which falls outside the capabilities provided here.\n\nGiven the constraints and the nature of the task, it\'s not feasible to accurately determine the brand of the webcam used on the laptop in the Cupola of the ISS with the available methods and information. Therefore, the appropriate response is:\n\n"I can\'t help."'
-        plan_task_message = self.task_decompose_format_message(task, pre_task_info, task_names, task_descriptions, next_task)
+        if self.replan_count == 0:
+            plan_task_message = self.task_decompose_format_message(task, pre_task_info, task_names, task_descriptions, next_task)
+        else:
+            plan_task_message = self.task_replan_format_message(task)
         
         # TESTCASE TEMP COMMENTED
         response = self.llm_provider.create_completion(plan_task_message)
@@ -80,7 +85,7 @@ class VisionPlanner:
             task_name = task_info['name']
             task_description = task_info['description']
             task_type = task_info['type']
-            task_deatil = task_info['content']
+            task_deatil = task_info['detail']
             # task_dependencies = task_info['dependencies']
             self.vision_tasks.append(task_name)
             self.vision_nodes[task_name] = ActionNode(task_name, task_description, task_type, task_deatil)
@@ -110,20 +115,13 @@ class VisionPlanner:
             system_version = self.system_version
         )
         
+        if self.replan_count > 0:
+            system_prompt = self.templates.get("_SYSTEM_REPLAN_PROMPT", "default")
+            user_prompt += "\nThe previous task execution failed. Here's the reflection for failed run: \n" + self.reflection + "\n"
+        
         current_image = self.screen_helper.capture()
         current_image_base64 = current_image['base64']
-        
-        # user_prompt = self.prompt['_USER_TASK_REPLAN_PROMPT'].format(
-        #     pre_task_info = pre_task_info,
-        #     current_task_description = current_task_description,
-        #     system_version=self.system_version,
-        #     reasoning = reasoning,
-        #     action_list = action_list,
-        #     working_dir = self.environment.working_dir,
-        #     files_and_folders = files_and_folders
-        # )
-        # current_image_base64 = 'fbase64'
-        
+
         self.message = [
             {
                 "role": "system", 
@@ -157,18 +155,6 @@ class VisionPlanner:
 
         json_utils.save_json(self.message, "decompose_task_message.json")
         return self.message
-    
-    def task_replan_format_message(self, task: Dict[str, Any]) -> List[Dict[str, Any]]:
-        # user_prompt = self.prompt['_USER_TASK_REPLAN_PROMPT'].format(
-        #     current_task = current_task,
-        #     current_task_description = current_task_description,
-        #     system_version=self.system_version,
-        #     reasoning = reasoning,
-        #     action_list = action_list,
-        #     working_dir = self.environment.working_dir,
-        #     files_and_folders = files_and_folders
-        # )
-        pass
     
     def update_action(self, action, return_val='', relevant_code=None, status=False, type='Code'):
         """
@@ -258,26 +244,6 @@ class VisionPlanner:
                 return f"Error parsing JSON data: {e}"
         else:
             return "No JSON data found in the string."
-
-    # not used
-    def assemble_prompt(self, template_name: str, message_prompt: str, image_path: Union[str, List[str]]) -> str:
-        if template_name not in self.templates:
-            raise ValueError(f"Template {template_name} not found.")
-        template: str = self.templates[template_name]
-
-        encoded_images: List[str] = encode_data_to_base64_path(image_path)
-        prompt: str = template.replace("{{message_prompt}}", message_prompt).replace("{{image_url}}", encoded_images[0])
-        return prompt
-
-    # not used
-    def append_images_to_message(self, message: Dict[str, Any], image_paths: Union[str, List[str]]) -> None:
-        encoded_images: List[str] = encode_data_to_base64_path(image_paths)
-        for encoded_image in encoded_images:
-            msg_content: Dict[str, Any] = {
-                "type": "image_url",
-                "image_url": {"url": encoded_image}
-            }
-            message["content"].append(msg_content)
 
     @staticmethod
     def simple_prompt_construction(system_prompt: str, image: Any, user_prompt: str) -> Dict[str, Any]:

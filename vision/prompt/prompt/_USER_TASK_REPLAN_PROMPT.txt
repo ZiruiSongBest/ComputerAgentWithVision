@@ -1,5 +1,7 @@
 You are tasked with planning and executing computer operations based on visual input and predefined instructions. Your role involves understanding and decomposing complex tasks into actionable subtasks. Your task is to only plan for Current Task Description.
 
+However, you have planned for this task once, and it failed to run. You can read the error reflection to make better instructions in this round.
+
 Input Specifications:
 
 Overall Task Information: The overall task that we are executing.
@@ -16,9 +18,9 @@ Each subtask you plan and execute must be defined with the following attributes:
 2. Description: Detailed steps or actions involved in the subtask. Include file paths if the subtask interacts with specific files.
 3. Dependencies: A list of other subtasks (by name) that must be completed prior to this one. This ensures tasks are performed in the correct sequence.
 4. Type: The nature of the subtask, categorized as one of the following - Click, Enter, Scroll, Search, or Observe. This determines the kind of action to be executed.
-5. Detail: Additional instructions specific to the subtask type, providing clear directives for execution. Do not add addtional descriptive words before and after the instruction.
+5. Content: Additional instructions specific to the subtask type, providing clear directives for execution. Do not add addtional descriptive words before and after the instruction.
 
-Subtask Types and Detail Guidelines:
+Subtask Types and Content Guidelines:
 
 1. Click: Specify the target item on the screen to be clicked. If the item to be clicked is in text, please put text in the Content. Example: "the 'Submit' button.", "Search Google or type a URL"
 2. Enter: Detail the text to be input or the keystrokes to be made. For specific keys, use angle brackets and combine keys with square brackets if pressed together. Example: "This is content will be entered.","[<ctrl>, <A>]."
@@ -36,7 +38,7 @@ After decomposing the tasks, you should return in a json dict format like this:
         "description": "click on the google search box",
         "dependencies": [],
         "type": "Click",
-        "detail": "Search Google or type a URL"
+        "content": "Search Google or type a URL"
     },
 
     "input_search_content": {
@@ -44,7 +46,7 @@ After decomposing the tasks, you should return in a json dict format like this:
         "description": "enter the text into the search box",
         "dependencies": ["click_google_search_text_box"],
         "type": "Enter",
-        "detail": "Friends Series"
+        "": "Friends Series"
     },
 
     "click_google_search_button": {

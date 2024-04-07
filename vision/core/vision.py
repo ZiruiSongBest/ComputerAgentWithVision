@@ -48,6 +48,21 @@ class Vision:
         self.logger.log(f"VISION Global task: {actions[0]}")
         self.vision_planner.plan_task(task, pre_tasks_info, actions, descriptions, next_action)
         
+        result, relevant_code = self.execute_list(task, actions)
+        
+        status = self.assess_current_task(task, actions, descriptions, result)
+        
+        while status == "replan" and self.vision_planner.replan_count < 3:
+            self.vision_planner.replan_count += 1
+            self.vision_planner.plan_task(task, actions, descriptions, next_action)
+            result, relevant_code = self.execute_list(task, actions)
+            status = self.assess_current_task(task, actions, descriptions, result)
+        
+        self.logger.info(status + result, title='Current Vision Task Result', color='green')
+
+        return [status, result, relevant_code]
+
+    def execute_list(self, task, actions):
         result = ''
         relevant_code = {}
 
@@ -56,17 +71,14 @@ class Vision:
             vision_type = self.vision_planner.vision_nodes[task_name].type
             pre_tasks_info = self.vision_planner.get_pre_tasks_info(task_name)
             # self.logger.info(pre_tasks_info, title='Pre-tasks Information', color='grey')
-            current_result = self.execute_task(task_name)
+            current_result = self.execute_single_task(task_name)
             self.vision_planner.update_action(task_name, current_result, True, vision_type)
 
         result = self.vision_planner.get_pre_tasks_info('end', True)
         
-        status = self.assess_current_task(task, actions, descriptions, result)
-        self.logger.info(status + result, title='Current Vision Task Result', color='green')
-
-        return [status, result, relevant_code]
-
-    def execute_task(self, task_name) -> dict:
+        return result, relevant_code
+        
+    def execute_single_task(self, task_name) -> dict:
         # Extract task details
         vision_node = self.vision_planner.vision_nodes.get(task_name)
         type = vision_node.type
@@ -74,7 +86,7 @@ class Vision:
         description = vision_node.description
         content = vision_node.detail
         
-        self.logger.info(f"Current VISION Executing tas isk: {task_name}")
+        self.logger.info(f"Current VISION Executing task: {task_name}")
         current_result = ''
         if (type == 'Enter'):
             current_result = self.vision_executor.enter(content)
@@ -107,4 +119,6 @@ class Vision:
             return "success"
         elif "No" in response:
             return "fail"
+        
+        self.vision_planner.reflection = response
         return "replan"

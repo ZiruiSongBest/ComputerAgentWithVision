@@ -81,7 +81,7 @@ class PlanningModule(BaseAgent):
         self.logging.write_json(decompose_json)
         self.logging.info(f"{json.dumps(decompose_json, indent=4)}", title='Decomposed Task', color='gray')
         
-        # with open('log/2024-04-03_14-04-41_task_sequence.json') as f:
+        # with open('log/2024-04-06_17-56-50_task_sequence.json') as f:
         #     decompose_json = json.load(f)
         
         # Building action graph and topological ordering of actions
