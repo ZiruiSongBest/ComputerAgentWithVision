@@ -105,6 +105,32 @@ You should only respond with a reasoning process and a JSON result in the format
 }
 
 ```
+```json
+{
+    "open_chrome_and_search": {
+        "name": "open_chrome_and_search",
+        "description": "Open Chrome With Google Searching 'HuggingFace twitter account announced an open source AI event in SF in 2023 with expanded capacity'",
+        "dependencies": [],
+        "type": "Code"
+    },
+    "click_most_relevant_result": {
+        "name": "click_most_relevant_result",
+        "description": "Click the most relevant search result from the screen",
+        "dependencies": [
+            "open_chrome_and_search"
+        ],
+        "type": "Vision"
+    },
+    "read_extract_new_capacity": {
+        "name": "read_extract_new_capacity",
+        "description": "Analyze the content on the screen to find the specific information about the new expanded capacity for the open source AI event.",
+        "dependencies": [
+            "click_most_relevant_result"
+        ],
+        "type": "Vision"
+    }
+}
+```
 
 And you should also follow the following criteria:
 0. If previous task is running with API but failed, and you think it might be possible to solve the issue by using Vision, please replan the task rely more on Vision. If you used vision before, you might try to accomplist task with API.

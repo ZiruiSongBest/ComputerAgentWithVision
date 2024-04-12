@@ -1,3 +1,4 @@
+import sys
 from typing import List, Dict, Union, Any
 from friday.action.get_os_version import get_os_name
 from vision.llm.openai import OpenAIProvider
@@ -73,6 +74,9 @@ class Vision:
             # self.logger.info(pre_tasks_info, title='Pre-tasks Information', color='grey')
             current_result = self.execute_single_task(task_name)
             self.vision_planner.update_action(task_name, current_result, True, vision_type)
+            
+            if vision_type == 'Click' or vision_type == 'Enter':
+                sys.sleep(5)
 
         result = self.vision_planner.get_pre_tasks_info('end', True)
         

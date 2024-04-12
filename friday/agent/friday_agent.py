@@ -70,19 +70,19 @@ class PlanningModule(BaseAgent):
         
         # TESTCASE TEMP COMMENTED
 
-        files_and_folders = self.environment.list_working_dir()
-        action_description_pair = json.dumps(action_description_pair)
-        response = self.task_decompose_format_message(task, action_description_pair, files_and_folders)
-        decompose_json = self.extract_json_from_string(response)
+        # files_and_folders = self.environment.list_working_dir()
+        # action_description_pair = json.dumps(action_description_pair)
+        # response = self.task_decompose_format_message(task, action_description_pair, files_and_folders)
+        # decompose_json = self.extract_json_from_string(response)
 
         # json_utils.save_json(json_utils.json_append(copy.deepcopy(response), 'task', task), f'friday_planned_response.json', indent=4)
         # self.logging.info(f"The overall response is: {response}", title='Original Response', color='gray')
         
-        self.logging.write_json(decompose_json)
-        self.logging.info(f"{json.dumps(decompose_json, indent=4)}", title='Decomposed Task', color='gray')
+        # self.logging.write_json(decompose_json)
+        # self.logging.info(f"{json.dumps(decompose_json, indent=4)}", title='Decomposed Task', color='gray')
         
-        # with open('log/2024-04-06_17-56-50_task_sequence.json') as f:
-        #     decompose_json = json.load(f)
+        with open('log/2024-04-07_12-36-11_task_sequence.json') as f:
+            decompose_json = json.load(f)
         
         # Building action graph and topological ordering of actions
         self.create_action_graph(decompose_json)
@@ -104,8 +104,8 @@ class PlanningModule(BaseAgent):
             }
             pre_task_information[task] = task_info
         pre_task_information[current_task] = {
-            "description" : self.action_node[task].description,
-            "return_val" : self.action_node[task].return_val
+            "description" : self.action_node[current_task].description,
+            "return_val" : self.action_node[current_task].return_val
         }
         
         pre_task_information = json.dumps(pre_task_information)
@@ -801,21 +801,21 @@ class ExecutionModule(BaseAgent):
         return info
     
     def generate_call_api_format_message(self, tool_sub_task, tool_api_path, context="No context provided."):
-        self.logging.warn(self.generate_openapi_doc_2(tool_api_path), title='OpenAPI Doc')
+        # self.logging.warn(self.generate_openapi_doc_2(tool_api_path), title='OpenAPI Doc')
         self.sys_prompt = self.prompt['_SYSTEM_TOOL_USAGE_PROMPT'].format(
             openapi_doc = json.dumps(self.generate_openapi_doc_2(tool_api_path)),
             tool_sub_task = tool_sub_task,
             context = context
         )
-        self.logging.info("************************<openapi_doc>**************************")
-        self.logging.info(self.sys_prompt, title='OpenAPI Doc', color='gray')
+        # self.logging.info("************************<openapi_doc>**************************")
+        # self.logging.info(self.sys_prompt, title='OpenAPI Doc', color='gray')
         
         self.user_prompt = self.prompt['_USER_TOOL_USAGE_PROMPT']
         self.message = [
             {"role": "system", "content": self.sys_prompt},
             {"role": "user", "content": self.user_prompt},
         ]
-        self.logging.info(self.message, title='API Call', color='gray')
+        # self.logging.info(self.message, title='API Call', color='gray')
         return self.llm.chat(self.message)
     
     def generate_openapi_doc_2(self, tool_api_path):
