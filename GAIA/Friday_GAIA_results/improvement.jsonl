@@ -1,0 +1,49 @@
+{"checked": "yes", "task_id": "198ffd8f-6041-458d-bacc-fe49872cfa43", "model_answer": "4"}
+{"checked": "yes", "task_id": "8770c47d-56ad-42cf-b0a6-7e48d0d19019", "model_answer": "150 million", "reasoning_trace": ""}
+
+{"checked": "yes", "task_id": "355b827f-fff0-4e0c-9ff0-65dea0609838", "Question": "The diagram in the attached Excel file represents a game of Tic-Tac-Toe, where X\u2019s are represented by red spaces, and O\u2019s are represented by blue spaces. Where should O place its next letter to win the game? Express your answer as a set of x-y coordinates, formatted as x, y. 0, 0 is the bottom left corner of the Tic-Tac-Toe board.", "model_answer": "1,2" }
+
+{"checked": "yes", "task_id": "8f697523-6988-4c4f-8d72-760a45681f68", "model_answer": "1043", "reasoning_trace": ""}
+{"checked": "yes", "task_id": "52fcc23e-4e68-43da-9410-f8f33632006f", "model_answer": "two of clubs", "reasoning_trace": ""}
+{"checked": "yes", "task_id": "b01a3c5f-56ce-4fee-bc15-afd2047bc976", "model_answer": ">,(,),$,>,>", "reasoning_trace": ""}
+{"checked": "yes", "task_id": "7b10295b-5287-41d7-897c-663fe194c04d", "model_answer": "C,E,F,N,O,P,R,S", "reasoning_trace": ""}
+{"checked": "yes", "task_id": "f1ba834a-3bcb-4e55-836c-06cc1e2ccb9f", "model_answer": "2166", "reasoning_trace": ""}
+{"checked": "yes", "task_id": "fb349e07-d6c6-4d98-9a0e-1a3567f7d9bd": "tbd"}
+{"checked": "yes", "task_id": "cbdb17dc-62d9-4463-b648-2eaacfeba4e5", "Question": "What number is drawn by the coloring of certain cells in the attached Excel file?", "model_answer": "3" }
+
+// Vision QA
+{"task_id": "8b553092-3d44-4ab3-8d1e-932aabc1e143", "model_answer": "f6", "reasoning_trace": "not sure"}
+
+// Search and VisionQA
+{"checked": "", "task_id": "e87720bf-7dbe-49c2-b91c-bfc23b14d157", "model_answer": "1000", "reasoning_trace": "HuggingFace twitter account announced an open source AI event in SF in 2023 with expanded capacity"}
+{"checked": "tbd", "task_id": "21aba0e0-03d6-4541-b467-a0384ca5298a", "model_answer": "orange", "backgound":"Search Rihanna twitter Dec 2021 Santa Claus "}
+{"task_id": "35320d83-246a-4367-8ed8-c04a93c68daa", "model_answer": "4" }
+
+// Vision Task
+
+// Weird Code
+{"checked": "", "task_id": "d6059b3e-e1da-43b4-ac26-ecad2984909b", "Question": "Of the bricks in this set inventory that appear in 5 sets total, what is the name of the one that appears most by count in all LEGO sets on Brickset?", "file_name": "d6059b3e-e1da-43b4-ac26-ecad2984909b.csv", "model_answer": "MINI HAT", "reasoning_trace": ""}
+
+// Videos
+{"task_id": "2131de62-c9b7-4f08-a28f-ccbd9e4809f3", "model_answer": "Lindsey"}
+{"task_id": "d82180c3-39f0-4008-a883-24d5226fc49b", "model_answer": "04:03", "reasoning_trace": ""}
+// {"task_id": "1b738608-485d-4456-98d3-31ad60f77284", "Question": "In the video of the 2022 finals on the Poetry By Heart homepage, how many judges are shown speaking?", "model_answer": "", "reasoning_trace": "Video https://poetrybyheart.org.uk/"}
+
+// Model Ability Limit
+{"task_id": "7674ee67-d671-462f-9e51-129944749a0a", "model_answer": "Destroyer", "reasoning_trace": ""}
+
+// Vision Hard
+{"task_id": "d0e1cd7d-0af2-4ca0-8e9d-7a3fa0687e7f", "Question": "Between 2000 and 2022, how many times was the english Wikipedia page for Fiji Mermaids edited on April Fool\u2019s Day?", "model_answer": "", "reasoning_trace": ""}
+{"task_id": "967ad395-7b16-43a2-83e7-41df7cd6401a", "Question": "Biochemist Glenn Kuehn's first publication showed the percent of ^14C present as two different chemicals for fixation times of 6 and 12 seconds during ribose oxidation by Hydrogenomonas facilis. Increasing the fixation time from 6 to 12 seconds resulted in an increase in the percent of ^14C present as one of these chemicals. What was the increase in percent of ^14C present for this chemical when fixation time increased from 6 seconds to 12 seconds? Give your answer with two significant figures.", "model_answer": "", "reasoning_trace": ""}
+
+// Others
+{"task_id": "7a770333-8c1b-4008-b630-9d3cb4f0c171", "model_answer": "", "reasoning_trace": "the penguins / https://www.musicvf.com/The+Penguins.art"}
+// {"task_id": "e51753c7-3ef3-4404-a352-11a18e5760c9", "model_answer": "12 Hearts", "reasoning_trace": "1. Use the image caption API to analyze the image and extract information about the player's health and health-restoring items.\n2. Based on the information obtained from the image analysis, calculate the number of times the player can sustain damage before being defeated, considering the optimal use of health-restoring items.\n"}
+
+// Cant do
+// {"task_id": "411e5d0e-52db-492f-97a3-bd93658c0357", "model_answer": "guitar"}
+// {"task_id": "f30a836f-420f-4738-80af-d2491e072dab", "model_answer": "", "reasoning_trace": "left or right"}
+// {"task_id": "8aa22ddc-fe80-464c-9c96-8d534fa5c7d5", "model_answer": "", "reasoning_trace": ""}
+{"task_id": "b201ae2a-fdab-4e13-a687-174d557d608a", "model_answer": "302154", "reasoning_trace": " wrong answer"}
+{"task_id": "bb505145-7a10-4d23-8af9-39d2b833be3f", "model_answer": "2.3%"}
+{"task_id": "adfc0afb-3ef2-4e79-b66b-c49823b6b913", "model_answer": "3" }
