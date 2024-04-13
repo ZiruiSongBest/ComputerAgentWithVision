@@ -8,7 +8,7 @@ from typing import Union
 from utils.screen_helper import ScreenHelper
 
 class SeeClick:
-    def __init__(self, screen_helper: ScreenHelper, url: str = 'http://100.119.14.85:8998/upload', prompt_template: str = "In this UI screenshot, what is the position of the element corresponding to the command \"{}\" (with point)?"):
+    def __init__(self, screen_helper: ScreenHelper, url: str = 'http://100.119.14.85:8998/seeclick', prompt_template: str = "In this UI screenshot, what is the position of the element corresponding to the command \"{}\" (with point)?"):
         self.url = url
         self.prompt_template = prompt_template
         self.screen_helper = screen_helper

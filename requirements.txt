@@ -54,10 +54,10 @@ jsonpatch==1.33
 jsonpointer==2.4
 kiwisolver==1.4.5
 kubernetes==28.1.0
-langchain==0.0.349
-langchain-community==0.0.1
-langchain-core==0.0.13
-langsmith==0.0.69
+langchain
+langchain-community
+langchain-core
+langsmith
 lxml==4.9.4
 marshmallow==3.20.1
 matplotlib==3.8.2
@@ -94,7 +94,7 @@ pyarrow==14.0.2
 pyarrow-hotfix==0.6
 pyasn1==0.5.1
 pyasn1-modules==0.3.0
-pydantic==2.5.2
+pydantic==2.5.3
 pydantic_core==2.14.5
 pyparsing==3.1.1
 PyPika==0.48.9
@@ -149,3 +149,5 @@ astor
 html2text
 google_auth_oauthlib
 google-api-python-client
+vertexai
+gemini_webapi
