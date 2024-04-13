@@ -31,12 +31,35 @@ class ExcelWriter:
             # 如果文件不存在或为空，初始化一个空的 DataFrame
             self.df = pd.DataFrame(columns=['task_id', 'final_answer', 'my_answer'])
 
-    def add_row(self, task_id, final_answer, my_answer):
-        # 添加一行数据
-        new_row = {'task_id': task_id, 'final_answer': final_answer, 'my_answer': my_answer}
-        self.df = self.df.append(new_row, ignore_index=True)
+    def add_row(self, task_id, final_answer, my_answer, question=None):
+        # 检查是否存在给定 task_id 的行
+        existing_row_index = self.df[self.df['task_id'] == task_id].index
+
+        if not existing_row_index.empty:
+            # 如果存在，更新该行
+            self.df.loc[existing_row_index, 'final_answer'] = final_answer
+            self.df.loc[existing_row_index, 'my_answer'] = my_answer
+        else:
+            # 如果不存在，添加新行
+            new_row_df = pd.DataFrame([[task_id, final_answer, my_answer]], columns=['task_id', 'final_answer', 'my_answer'])
+            self.df = pd.concat([self.df, new_row_df], ignore_index=True)
 
     def save(self):
-        # 将 DataFrame 写入 Excel 文件，如果文件存在，不会删除原有数据
-        with pd.ExcelWriter(self.filename, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+        self.remove_duplicate_task_ids()
+        # Check if the Excel file exists
+        if os.path.exists(self.filename):
+            # If the file exists, open in append mode
+        #     mode = 'a'
+        #     if_sheet_exists = 'overlay'
+        # else:
+            # If the file does not exist, create a new file
+            mode = 'w'
+            if_sheet_exists = None
+
+        # Use the determined mode to save the DataFrame
+        with pd.ExcelWriter(self.filename, engine='openpyxl', mode=mode, if_sheet_exists=if_sheet_exists) as writer:
             self.df.to_excel(writer, index=False)
+
+    def remove_duplicate_task_ids(self):
+        # 检查并保留每个 task_id 的最后一个条目
+        self.df = self.df.drop_duplicates(subset=['task_id'], keep='last')
