@@ -508,3 +508,4 @@ dist
 .pnp.*
 
 !/GAIA/success_logs/*.log
+GAIA/2023/

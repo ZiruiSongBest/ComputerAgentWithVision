@@ -9,8 +9,10 @@ dataset = load_dataset(data_path, "2023_level1")
 test_data = dataset["test"]
 valid_data = dataset["validation"]
 
-conda_python_path = '/home/ubuntu/anaconda3/envs/osc/bin/python'
-working_directory = '/home/ubuntu/workspace/ComputerAgentWithVision'
+conda_python_path = os.path.join(os.environ['CONDA_PREFIX'], 'python.exe')
+# conda_python_path = '/Users/dylan/miniconda3/envs/test/bin/python'
+# conda_python_path = '/home/ubuntu/anaconda3/envs/osc/bin/python'
+working_directory = '..'
 
 writer = ExcelWriter('tasks.xlsx')
 
