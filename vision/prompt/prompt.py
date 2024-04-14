@@ -31,6 +31,19 @@ Subtask Types and Detail Guidelines:
 
 After decomposing the tasks, you should return in a json dict format like this:
 
+
+```json
+{
+    "click_start_button": {
+        "name": "click_start_button",
+        "description": "click on the 'Start' button in the TencentMeeting application to navigate to the meeting creation interface",
+        "dependencies": [],
+        "type": "Click",
+        "detail": "Start"
+    }
+}
+```
+
 ```json
 {
     "click_google_search_text_box": {

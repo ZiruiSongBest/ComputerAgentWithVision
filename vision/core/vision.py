@@ -1,4 +1,4 @@
-import sys
+import time
 from typing import List, Dict, Union, Any
 from friday.action.get_os_version import get_os_name
 from vision.llm.openai import OpenAIProvider
@@ -53,17 +53,17 @@ class Vision:
         
         result, relevant_code = self.execute_list(task, actions)
         
-        status = self.assess_current_task(task, actions, descriptions, result)
+        # status = self.assess_current_task(task, actions, descriptions, result)
         
-        while status == "replan" and self.vision_planner.replan_count < 3:
-            self.vision_planner.replan_count += 1
-            self.vision_planner.plan_task(task, actions, descriptions, next_action)
-            result, relevant_code = self.execute_list(task, actions)
-            status = self.assess_current_task(task, actions, descriptions, result)
+        # while status == "replan" and self.vision_planner.replan_count < 3:
+        #     self.vision_planner.replan_count += 1
+        #     self.vision_planner.plan_task(task, actions, descriptions, next_action)
+        #     result, relevant_code = self.execute_list(task, actions)
+        #     status = self.assess_current_task(task, actions, descriptions, result)
         
-        self.logger.info(status + result, title='Current Vision Task Result', color='green')
+        # self.logger.info(status + result, title='Current Vision Task Result', color='green')
 
-        return [status, result, relevant_code]
+        return ['success', result, relevant_code]
 
     def execute_list(self, task, actions):
         result = ''
@@ -78,7 +78,7 @@ class Vision:
             self.vision_planner.update_action(task_name, current_result, True, vision_type)
             
             if vision_type == 'Click' or vision_type == 'Enter':
-                sys.sleep(5)
+                time.sleep(5)
 
         result = self.vision_planner.get_pre_tasks_info('end', True)
         

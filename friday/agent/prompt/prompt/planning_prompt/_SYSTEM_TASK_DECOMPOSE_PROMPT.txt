@@ -201,6 +201,30 @@ You should only respond with a reasoning process and a JSON result in the format
   }
 }
 ```
+```json
+{
+    "list_application": {
+        "name": "list_application",
+        "description": "List applications on the computer for future open applications",
+        "dependencies": [],
+        "type": "Code"
+    },
+    "open_tencent_meeting": {
+        "name": "open_tencent_meeting",
+        "description": "Open the TencentMeeting application from the system.",
+        "dependencies": ["list_application"],
+        "type": "Code"
+    },
+    "create_meeting": {
+        "name": "create_meeting",
+        "description": "Navigate within the TencentMeeting application to the interface and create a new meeting.",
+        "dependencies": [
+            "open_tencent_meeting"
+        ],
+        "type": "Vision"
+    }
+}
+```
 
 And you should also follow the following criteria:
 1. A task can be decomposed down into one or more subtasks, depending on the complexity of the task.

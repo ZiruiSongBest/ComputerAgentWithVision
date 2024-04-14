@@ -190,9 +190,16 @@ class VisionPlanner:
         return pre_tasks_info
     
     def seeclick_task_planner(self, task_description):
-        user_prompt = f"Given the Current Screenshot, Tell me what should I click on to achieve [{task_description}]? Please use a short, comprehend sentence to describe the target. For example, 'Click on the red button.', 'Click on the image with a panda on it.'."
-        return self.omnilmm.get_response(user_prompt)
-        
+        user_prompt = f"Given the Current Screenshot, Tell me what should I click on to achieve [{task_description}]? Please use a short, comprehend sentence to describe the target. Warp your answer in [answer content]. For example, [Click on the red button]', '[Click on the image with a panda on it]'. "
+        response = self.omnilmm.get_response(user_prompt)
+        pattern = r"(?:\'(.*?)\'|\"(.*?)\"|\[(.*?)\])"
+        matches = re.findall(pattern, response)
+        if matches:
+            quoted_content = [item for sublist in matches for item in sublist if item]
+            return quoted_content[0]
+        else:
+            # If no quoted content is found, return the whole sentence
+            return response
         
     
     def extract_decomposed_tasks(self, response) -> List[Dict[str, Any]]:

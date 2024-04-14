@@ -30,7 +30,7 @@ class SeeClick:
         data = {'text': ref}
         
         response = requests.post(self.url, files=files, data=data).json()
-        print(response['dot_location'])
+        print(response)
         location = response['dot_location']
         # location = "(0.39,0.48)"
 

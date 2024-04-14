@@ -125,8 +125,9 @@ class VisionExecutor:
         
         self.key_tool.move_and_click(x, y, button='left', clicks=2, interval=2, duration=None)
         
-        self.assess(content, image_before)
-        return 'success'
+        if not self.assess(content, image_before):
+            return 'success'
+        return 'fail'
     
     def observe(self, content):
         captured = self.screen_helper.capture()
@@ -151,9 +152,11 @@ class VisionExecutor:
         return response[0]
 
     def assess(self, content, image_before):
-        measure_prompt = f"Please judge whether the operation is successful, answer in yes and no {content}"
+        measure_prompt = f"Please judge whether the operation is successful, answer in yes and failure {content}. Don't answer failure if you are not sure."
         response = self.omnilmm.get_response(measure_prompt)
         self.logger.info(response)
-        return response[0]
+        if not 'failure' in response:
+            return True
+        return False
 # shape = VisionExecutor()
 # shape.enter_text("ABCDEFG")

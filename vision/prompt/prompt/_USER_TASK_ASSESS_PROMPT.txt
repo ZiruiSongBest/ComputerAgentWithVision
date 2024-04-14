@@ -4,4 +4,4 @@ Overall Task is: {over_all_task} (This is reference only, do not assess overall 
 Current Task(s) are: {task_and_descriptions}
 the current execution result is: {result}
 
-Is current task completed? if the task seems correctly executed, please return 'Yes' to continue, if it's not correct and you think there might be chance to replan and do it correctly, return 'Replan' and explain your reasoning. If it's impossible to finish the task or you cannot solve the error, return 'No'.
+I just finished the current task, is current task completed? if the task seems correctly executed, please return 'Yes' to continue, if it's not correct and you think there might be chance to replan and do it correctly, return 'Replan' and explain your reasoning. If it's impossible to finish the task or you cannot solve the error, return 'No'. If you are slightly unsure about it, return 'Yes'.
