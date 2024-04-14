@@ -4,6 +4,7 @@ from typing import List, Dict, Any
 import torch
 from vision.llm.openai import OpenAIProvider
 from vision.grounding.seeclick import SeeClick
+from vision.grounding.omnilmm import OmniLMM
 from utils.encode_image import encode_data_to_base64_path, encode_single_data_to_base64
 from utils.screen_helper import ScreenHelper
 from utils.KEY_TOOL import IOEnvironment
@@ -27,10 +28,11 @@ from vision.prompt.prompt import prompt
 包含调用系统KEY_TOOL的各种操作, 还有键入等
 '''
 class VisionExecutor:
-    def __init__(self, template_file_path: str = None, llm_provider: OpenAIProvider = None, seeclick: SeeClick = None, screen_helper: ScreenHelper = None, key_tool: IOEnvironment = None, system_version: str = None, logger: Logger = None) -> None:
+    def __init__(self, template_file_path: str = None, llm_provider: OpenAIProvider = None, seeclick: SeeClick = None, omnilmm: OmniLMM = None, screen_helper: ScreenHelper = None, key_tool: IOEnvironment = None, system_version: str = None, logger: Logger = None) -> None:
         # Helpers
         self.llm_provider = llm_provider
         self.seeclick = seeclick
+        self.omnilmm = omnilmm
         self.screen_helper = screen_helper
         self.key_tool = key_tool
         self.logger = logger
@@ -117,10 +119,13 @@ class VisionExecutor:
         return 'success'
     
     def click(self, content):
+        image_before = self.screen_helper.capture(heading=False)['base64']
         result = self.seeclick.get_location_with_current(content)
         x, y = result['position'][0].item(), result['position'][1].item()
         
         self.key_tool.move_and_click(x, y, button='left', clicks=2, interval=2, duration=None)
+        
+        self.assess(content, image_before)
         return 'success'
     
     def observe(self, content):
@@ -145,5 +150,10 @@ class VisionExecutor:
         self.logger.info(response)
         return response[0]
 
+    def assess(self, content, image_before):
+        measure_prompt = f"Please judge whether the operation is successful, answer in yes and no {content}"
+        response = self.omnilmm.get_response(measure_prompt)
+        self.logger.info(response)
+        return response[0]
 # shape = VisionExecutor()
 # shape.enter_text("ABCDEFG")

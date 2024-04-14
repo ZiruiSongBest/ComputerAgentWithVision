@@ -14,7 +14,7 @@ class OmniLMM:
         try:
             captured = self.screen_helper.capture(heading=False)
             base64_img = captured['base64']
-            print(base64_img[:100])
+            # print(base64_img[:100])
             template = custom_template if custom_template else self.prompt_template
             data = {
                 'content': ref,

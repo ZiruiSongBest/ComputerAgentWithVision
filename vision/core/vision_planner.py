@@ -5,6 +5,7 @@ from friday.core.action_node import ActionNode
 from typing import List, Dict, Union, Any
 from vision.llm.openai import OpenAIProvider
 from vision.grounding.seeclick import SeeClick
+from vision.grounding.omnilmm import OmniLMM
 from utils.encode_image import encode_data_to_base64_path, encode_single_data_to_base64
 from utils.screen_helper import ScreenHelper
 from utils.logger import Logger
@@ -19,10 +20,11 @@ from PIL import Image
 3. 生成task(定义task类)
 '''
 class VisionPlanner:
-    def __init__(self, template_file_path: str = None, llm_provider: OpenAIProvider = None, seeclick: SeeClick = None, screen_helper: ScreenHelper = None, system_version: str = None, logger: Logger = None) -> None:
+    def __init__(self, template_file_path: str = None, llm_provider: OpenAIProvider = None, seeclick: SeeClick = None, omnilmm: OmniLMM = None, screen_helper: ScreenHelper = None, system_version: str = None, logger: Logger = None) -> None:
         # Helpers
         self.llm_provider = llm_provider
         self.seeclick = seeclick
+        self.omnilmm = omnilmm
         self.screen_helper = screen_helper
         self.logger = logger
         
@@ -187,43 +189,11 @@ class VisionPlanner:
         pre_tasks_info = json.dumps(pre_tasks_info, indent=4)
         return pre_tasks_info
     
-    # deprecated
-    def seeclick_task_planner(self, image_input: Union[str, Image.Image, None] = None, template_name: str = "seeclick_preprocess"):
-        self.init_system_messages(template_name)
-        base64_image = []
+    def seeclick_task_planner(self, task_description):
+        user_prompt = f"Given the Current Screenshot, Tell me what should I click on to achieve [{task_description}]? Please use a short, comprehend sentence to describe the target. For example, 'Click on the red button.', 'Click on the image with a panda on it.'."
+        return self.omnilmm.get_response(user_prompt)
         
-        if image_input is None:
-            captured = self.screen_helper.capture()
-            image_input = captured['image']
-            base64_image.append(encode_single_data_to_base64(image_input))
-        elif isinstance(image_input, str):
-            base64_image.append(encode_single_data_to_base64(image_input))
-        elif isinstance(image_input, Image.Image):
-            base64_image.append(encode_single_data_to_base64(image_input))
-        else:
-            raise ValueError("Unsupported image input type.")
         
-        screenshot_text = "Current Screenshot:"
-        user_prompt = "What should I click on? Please use a short, comprehend sentence to describe the target. For example, 'Click on the red button.', 'Click on the image with a panda on it.'."
-        
-        self.messages.append({
-            "role": "user",
-            "content": [{
-                "type": "text",
-                "text": screenshot_text
-            }, {
-                "type": "image_url",
-                "image_url": {
-                    "url": base64_image[0]
-                }
-            }, {
-                "type": "text",
-                "text": user_prompt
-            }]
-        })
-        
-        return self.messages
-        return self.llm_provider.create_completion(self.messages)
     
     def extract_decomposed_tasks(self, response) -> List[Dict[str, Any]]:
         # Improved regular expression to find JSON data within a string

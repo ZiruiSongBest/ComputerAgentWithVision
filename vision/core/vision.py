@@ -5,6 +5,7 @@ from vision.llm.openai import OpenAIProvider
 from vision.core.vision_planner import VisionPlanner
 from vision.core.vision_executor import VisionExecutor
 from vision.grounding.seeclick import SeeClick
+from vision.grounding.omnilmm import OmniLMM
 from utils.screen_helper import ScreenHelper
 from utils.KEY_TOOL import IOEnvironment
 from utils.logger import Logger
@@ -32,13 +33,14 @@ class Vision:
         self.screen_helper = ScreenHelper()
         self.key_tool = IOEnvironment()
         self.seeclick = SeeClick(screen_helper=self.screen_helper)
+        self.omnilmm = OmniLMM(screen_helper=self.screen_helper)
         
         # variables
         self.system_version = get_os_name()
         
         # submodules
-        self.vision_planner = VisionPlanner(llm_provider=self.llm_provider, seeclick=self.seeclick, screen_helper=self.screen_helper, logger=self.logger)
-        self.vision_executor = VisionExecutor(llm_provider=self.llm_provider, seeclick=self.seeclick, screen_helper=self.screen_helper, key_tool=self.key_tool, system_version=self.system_version, logger=self.logger)
+        self.vision_planner = VisionPlanner(llm_provider=self.llm_provider, seeclick=self.seeclick, omnilmm=self.omnilmm, screen_helper=self.screen_helper, logger=self.logger)
+        self.vision_executor = VisionExecutor(llm_provider=self.llm_provider, seeclick=self.seeclick, omnilmm=self.omnilmm, screen_helper=self.screen_helper, key_tool=self.key_tool, system_version=self.system_version, logger=self.logger)
         
     
     def global_execute(self, task, actions, action_nodes, pre_tasks_info):
@@ -95,7 +97,9 @@ class Vision:
         if (type == 'Enter'):
             current_result = self.vision_executor.enter(content)
         elif (type == 'Click'):
-            current_result = self.vision_executor.click(content)
+            current_content = self.vision_planner.seeclick_task_planner(content)
+            self.logger.info(f"Clicking on: {current_content}", title='OmniResponse', color='blue')
+            current_result = self.vision_executor.click(current_content)
         elif (type == 'Observe'):
             current_result = self.vision_executor.observe(content)
         
@@ -115,7 +119,8 @@ class Vision:
             task_and_descriptions = all_tasks,
             result = result
         )
-        response = self.vision_executor.observe(user_message)
+        # response = self.vision_executor.observe(user_message)
+        response = self.omnilmm.get_response(user_message)
         
         self.logger.info(response, title='Assess Current Task', color='green')
         

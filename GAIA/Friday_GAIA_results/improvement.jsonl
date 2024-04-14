@@ -1,16 +1,3 @@
-{"checked": "yes", "task_id": "198ffd8f-6041-458d-bacc-fe49872cfa43", "model_answer": "4"}
-{"checked": "yes", "task_id": "8770c47d-56ad-42cf-b0a6-7e48d0d19019", "model_answer": "150 million", "reasoning_trace": ""}
-
-{"checked": "yes", "task_id": "355b827f-fff0-4e0c-9ff0-65dea0609838", "Question": "The diagram in the attached Excel file represents a game of Tic-Tac-Toe, where X\u2019s are represented by red spaces, and O\u2019s are represented by blue spaces. Where should O place its next letter to win the game? Express your answer as a set of x-y coordinates, formatted as x, y. 0, 0 is the bottom left corner of the Tic-Tac-Toe board.", "model_answer": "1,2" }
-
-{"checked": "yes", "task_id": "8f697523-6988-4c4f-8d72-760a45681f68", "model_answer": "1043", "reasoning_trace": ""}
-{"checked": "yes", "task_id": "52fcc23e-4e68-43da-9410-f8f33632006f", "model_answer": "two of clubs", "reasoning_trace": ""}
-{"checked": "yes", "task_id": "b01a3c5f-56ce-4fee-bc15-afd2047bc976", "model_answer": ">,(,),$,>,>", "reasoning_trace": ""}
-{"checked": "yes", "task_id": "7b10295b-5287-41d7-897c-663fe194c04d", "model_answer": "C,E,F,N,O,P,R,S", "reasoning_trace": ""}
-{"checked": "yes", "task_id": "f1ba834a-3bcb-4e55-836c-06cc1e2ccb9f", "model_answer": "2166", "reasoning_trace": ""}
-{"checked": "yes", "task_id": "fb349e07-d6c6-4d98-9a0e-1a3567f7d9bd": "tbd"}
-{"checked": "yes", "task_id": "cbdb17dc-62d9-4463-b648-2eaacfeba4e5", "Question": "What number is drawn by the coloring of certain cells in the attached Excel file?", "model_answer": "3" }
-
 // Vision QA
 {"task_id": "8b553092-3d44-4ab3-8d1e-932aabc1e143", "model_answer": "f6", "reasoning_trace": "not sure"}
 

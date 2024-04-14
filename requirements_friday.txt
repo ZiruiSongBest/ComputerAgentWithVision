@@ -165,3 +165,4 @@ astor
 simpleeval
 arxiv
 python-multipart
+langchain_openai

@@ -70,19 +70,19 @@ class PlanningModule(BaseAgent):
         
         # TESTCASE TEMP COMMENTED
 
-        # files_and_folders = self.environment.list_working_dir()
-        # action_description_pair = json.dumps(action_description_pair)
-        # response = self.task_decompose_format_message(task, action_description_pair, files_and_folders)
-        # decompose_json = self.extract_json_from_string(response)
+        files_and_folders = self.environment.list_working_dir()
+        action_description_pair = json.dumps(action_description_pair)
+        response = self.task_decompose_format_message(task, action_description_pair, files_and_folders)
+        decompose_json = self.extract_json_from_string(response)
 
         # json_utils.save_json(json_utils.json_append(copy.deepcopy(response), 'task', task), f'friday_planned_response.json', indent=4)
         # self.logging.info(f"The overall response is: {response}", title='Original Response', color='gray')
         
-        # self.logging.write_json(decompose_json)
-        # self.logging.info(f"{json.dumps(decompose_json, indent=4)}", title='Decomposed Task', color='gray')
+        self.logging.write_json(decompose_json)
+        self.logging.info(f"{json.dumps(decompose_json, indent=4)}", title='Decomposed Task', color='gray')
         
-        with open('log/2024-04-07_12-36-11_task_sequence.json') as f:
-            decompose_json = json.load(f)
+        # with open('log/2024-04-07_12-36-11_task_sequence.json') as f:
+        #     decompose_json = json.load(f)
         
         # Building action graph and topological ordering of actions
         self.create_action_graph(decompose_json)
@@ -434,6 +434,7 @@ class ExecutionModule(BaseAgent):
         self.open_api_doc_path = get_open_api_doc_path()
         self.open_api_doc = {}
         self.logging = logger
+        self.summarize_threshold = 10000
         with open(self.open_api_doc_path) as f:
             self.open_api_doc = json.load(f) 
     
@@ -470,10 +471,10 @@ class ExecutionModule(BaseAgent):
         state = self.environment.step(code)
         self.logging.info("************************<state>**************************")
         
-        if state.result != None and len(state.result) > 10000:
-            return_val_short = state.result[:2000] + state.result[-2000:]
+        if state.result != None and len(state.result) > self.summarize_threshold:
+            return_val_short = state.result[:self.summarize_threshold//2] + state.result[-self.summarize_threshold//2:]
             sys_prompt = self.prompt['_SYSTEM_RETURN_VAL_SUMMARY_PROMPT']
-            user_prompt = "The return value is too long, only the first 2000 characters and last 2000 characters are displayed. \n" + return_val_short
+            user_prompt = f"The return value is too long, only the first {self.summarize_threshold//2} characters and last {self.summarize_threshold//2} characters are displayed. \n" + return_val_short
             summary_message = [
                 {"role": "system", "content": sys_prompt},
                 {"role": "user", "content": user_prompt},
@@ -677,15 +678,15 @@ class ExecutionModule(BaseAgent):
         """
         Send task judge prompt to LLM and get JSON response.
         """
-        if len(code_output) > 2000:
-            code_output = code_output[:2000]
+        if len(code_output) > self.summarize_threshold:
+            code_output = code_output[:self.summarize_threshold//2] + code_output[-self.summarize_threshold//2:]
             sys_prompt = self.prompt['_SYSTEM_TASK_JUDGE_SUMMARY_PROMPT']
-            user_prompt = "The code output is too long, only the first 2000 characters are displayed. \n" + code_output
+            user_prompt = f"The code output is too long, only the first {self.summarize_threshold//2} characters are displayed. \n" + code_output
             summary_message = [
                 {"role": "system", "content": sys_prompt},
                 {"role": "user", "content": user_prompt},
             ]
-            code_output = self.llm.chat(self.message)
+            code_output = self.llm.chat(self.summary_message)
         
         next_action = json.dumps(next_action)
         sys_prompt = self.prompt['_SYSTEM_TASK_JUDGE_PROMPT']
