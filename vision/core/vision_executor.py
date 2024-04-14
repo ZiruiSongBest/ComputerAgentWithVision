@@ -158,5 +158,6 @@ class VisionExecutor:
         if not 'failure' in response:
             return True
         return False
+
 # shape = VisionExecutor()
 # shape.enter_text("ABCDEFG")

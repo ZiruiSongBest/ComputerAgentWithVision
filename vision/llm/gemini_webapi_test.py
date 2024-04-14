@@ -11,7 +11,7 @@ async def main():
     client = GeminiClient(Secure_1PSID, Secure_1PSIDTS, proxies=None)
     await client.init(timeout=30, auto_close=False, close_delay=300, auto_refresh=True)
 
-    response2 = await client.generate_content("@Youtube https://www.youtube.com/watch?v=Qofdx9tEWBw Where is Ken right now?")
+    response2 = await client.generate_content("@Youtube https://www.youtube.com/watch?v=X-AjhXhk19U, what character is playing the violin throughout the video?")
     print(response2, "\n\n----------------------------------\n")
 
 asyncio.run(main())

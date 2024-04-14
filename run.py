@@ -49,12 +49,14 @@ def main():
             actions = []
             action_nodes = []
             for execute_action in planning_agent.execute_list:
+                print(execute_action)
                 if planning_agent.action_node[execute_action].type == 'Vision':
                     actions.append(execute_action)
                     action_nodes.append(planning_agent.action_node[execute_action])
-                    planning_agent.execute_list.remove(execute_action)
                 else:
                     break
+            for execute_action in actions:
+                planning_agent.execute_list.remove(execute_action)
             planning_agent.execute_list.insert(0, action)
             return_val = vision_executor.global_execute(task, actions, action_nodes, pre_tasks_info)
             planning_agent.execute_list.remove(action)

@@ -1,0 +1,3 @@
+Currently, you have following goal to complete: {current_task_info}
+Before this, you have finished: {pre_task_info}
+System Version: {system_version}

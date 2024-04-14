@@ -1,0 +1,24 @@
+{
+    "search_recipe_on_reddit": {
+        "name": "search_recipe_on_reddit",
+        "description": "Use the '/tools/bing/searchv2' API to search for the cherry melomel recipe by StormBeforeDawn on Reddit's r/mead.",
+        "dependencies": [],
+        "type": "API"
+    },
+    "retrieve_recipe_content": {
+        "name": "retrieve_recipe_content",
+        "description": "Use the '/tools/bing/load_pagev2' API with a query parameter set to 'cherry melomel recipe by StormBeforeDawn, not updated after July 14, 2022' to retrieve the content of the Reddit post found in the previous step.",
+        "dependencies": [
+            "search_recipe_on_reddit"
+        ],
+        "type": "API"
+    },
+    "extract_cherry_quantity": {
+        "name": "extract_cherry_quantity",
+        "description": "Analyze the content retrieved from the Reddit post to find the quantity of whole cherries with pits needed for a 10-gallon batch.",
+        "dependencies": [
+            "retrieve_recipe_content"
+        ],
+        "type": "QA"
+    }
+}

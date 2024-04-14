@@ -81,7 +81,7 @@ class PlanningModule(BaseAgent):
         self.logging.write_json(decompose_json)
         self.logging.info(f"{json.dumps(decompose_json, indent=4)}", title='Decomposed Task', color='gray')
         
-        # with open('log/2024-04-07_12-36-11_task_sequence.json') as f:
+        # with open('log/2024-04-14_18-24-53_task_sequence.json') as f:
         #     decompose_json = json.load(f)
         
         # Building action graph and topological ordering of actions
@@ -434,7 +434,7 @@ class ExecutionModule(BaseAgent):
         self.open_api_doc_path = get_open_api_doc_path()
         self.open_api_doc = {}
         self.logging = logger
-        self.summarize_threshold = 10000
+        self.summarize_threshold = 20000
         with open(self.open_api_doc_path) as f:
             self.open_api_doc = json.load(f) 
     

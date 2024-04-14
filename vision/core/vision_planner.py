@@ -222,6 +222,44 @@ class VisionPlanner:
         else:
             return "No JSON data found in the string."
 
+    def plan_next_step(self, current_task_info, pre_task_info):
+        '''
+            Plan the next step of the task
+        '''
+        system_prompt = self.templates.get("_SYSTEM_NEXT_PROMPT", "default")
+        user_prompt = self.templates.get("_USER_NEXT_PROMPT", "default")
+        
+        user_prompt = user_prompt.format(
+            current_task_info = current_task_info,
+            pre_task_info = pre_task_info,
+            system_version = self.system_version
+        )
+        
+        captured = self.screen_helper.capture()
+        current_screen = encode_single_data_to_base64(captured['image'])
+        messages = []
+        messages.append({
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": system_prompt
+                }, 
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": current_screen
+                    }
+                },
+                {
+                    "type": "text",
+                    "text": user_prompt
+                }
+            ]
+        })
+        
+        self.llm_provider.create_completion(messages)
+
     @staticmethod
     def simple_prompt_construction(system_prompt: str, image: Any, user_prompt: str) -> Dict[str, Any]:
         encoded_image: List[str] = encode_data_to_base64_path(image)

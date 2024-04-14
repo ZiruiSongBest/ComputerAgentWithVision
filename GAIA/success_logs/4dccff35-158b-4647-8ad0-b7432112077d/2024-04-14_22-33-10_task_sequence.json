@@ -1,0 +1,48 @@
+{
+    "search_for_article": {
+        "name": "search_for_article",
+        "description": "Use the '/tools/bing/searchv2' API to search for the article about 'Food For Everyone' by an author who has studied the distribution of rare and elusive species illustrated by the Kam dwarf hamster.",
+        "dependencies": [],
+        "type": "API"
+    },
+    "load_article_content": {
+        "name": "load_article_content",
+        "description": "Use the '/tools/bing/load_pagev2' API with a query parameter set to the title of the article found in the previous step to load the content of the article.",
+        "dependencies": [
+            "search_for_article"
+        ],
+        "type": "API"
+    },
+    "extract_genus_from_article": {
+        "name": "extract_genus_from_article",
+        "description": "Analyze the content returned by the previous task to extract the genus being studied in the article about 'Food For Everyone'.",
+        "dependencies": [
+            "load_article_content"
+        ],
+        "type": "QA"
+    },
+    "search_for_wikispecies_subordo": {
+        "name": "search_for_wikispecies_subordo",
+        "description": "Use the '/tools/bing/searchv2' API to search for the Wikispecies Subordo of the genus identified in the previous step as of 2022.",
+        "dependencies": [
+            "extract_genus_from_article"
+        ],
+        "type": "API"
+    },
+    "load_wikispecies_subordo_content": {
+        "name": "load_wikispecies_subordo_content",
+        "description": "Use the '/tools/bing/load_pagev2' API with a query parameter set to the genus name and 'Wikispecies Subordo 2022' to find the most relevant content about the Subordo.",
+        "dependencies": [
+            "search_for_wikispecies_subordo"
+        ],
+        "type": "API"
+    },
+    "extract_subordo_information": {
+        "name": "extract_subordo_information",
+        "description": "Analyze the content returned by the previous task to extract the Wikispecies Subordo for the identified genus as of 2022.",
+        "dependencies": [
+            "load_wikispecies_subordo_content"
+        ],
+        "type": "QA"
+    }
+}

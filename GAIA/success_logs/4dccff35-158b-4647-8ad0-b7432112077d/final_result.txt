@@ -1,0 +1,1 @@
+extract_subordo_information: Based on the content returned by the previous task, the Wikispecies Subordo for the identified genus, Cricetulus, as of 2022 is Myomorpha. 

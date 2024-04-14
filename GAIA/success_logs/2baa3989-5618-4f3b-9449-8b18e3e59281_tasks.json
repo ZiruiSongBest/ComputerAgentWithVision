@@ -1,0 +1,24 @@
+{
+    "search_wikipedia_page": {
+        "name": "search_wikipedia_page",
+        "description": "Use the '/tools/bing/searchv2' API to search for the 'West African Vodun Wikipedia page' to find the URL of the page.",
+        "dependencies": [],
+        "type": "API"
+    },
+    "load_wikipedia_page_content": {
+        "name": "load_wikipedia_page_content",
+        "description": "Use the '/tools/bing/load_pagev2' API with the URL obtained from the previous task and a query parameter set to 'Scopus citations' to load the relevant content of the West African Vodun Wikipedia page.",
+        "dependencies": [
+            "search_wikipedia_page"
+        ],
+        "type": "API"
+    },
+    "count_scopus_citations": {
+        "name": "count_scopus_citations",
+        "description": "Analyze the content loaded from the Wikipedia page to count how many in-text citations reference a source that was cited using Scopus.",
+        "dependencies": [
+            "load_wikipedia_page_content"
+        ],
+        "type": "QA"
+    }
+}
