@@ -1,0 +1,8 @@
+Your task is: {current_task}
+To achieve this goal, you might be able to use several different types of operations to finish the current job:
+
+1. Click: Specify the target item on the screen to be clicked. If the item to be clicked is in text, please put text in the Content. Example: "the 'Submit' button.", "Search Google or type a URL"
+2. Enter: Detail the text to be input or the keystrokes to be made. For specific keys, use angle brackets and combine keys with square brackets if pressed together. Example: "This is content will be entered.","<ctrl><A>."
+3. Scroll: Indicate the direction and, if possible, the extent to which the page should be scrolled. Example: "up" or "down"
+4. Search: Provide the exact word or short phrase to be found on the current screen. No fuzzy searches allowed. Example: "OpenAI", "Maps"
+5. Observe: Describe what specific information or elements need to be identified or noted from the screen. Example: "Observe and note the total number of unread emails."

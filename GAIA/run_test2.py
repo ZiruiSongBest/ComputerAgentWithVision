@@ -8,7 +8,10 @@ import json
 
 question_set = "output.jsonl"
 with open(question_set, 'r') as file:
-    valid_data = [json.loads(line) for line in file]
+    valid_data = []
+    for line in file:
+        if not line.strip().startswith('//'):
+            valid_data.append(json.loads(line))
 
 # test_data = dataset["test"]
 # valid_data = dataset["validation"]
