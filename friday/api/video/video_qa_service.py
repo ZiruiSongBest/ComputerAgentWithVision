@@ -3,6 +3,7 @@ import re
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends
 from pydantic import BaseModel, Field
 from typing import Optional
+from pytube import YouTube
 from .video_qa import FrameExtractor, FileUploader, AIContentGenerator, get_gemini_response
 
 router = APIRouter()
@@ -41,9 +42,18 @@ async def video_qa(item: dict = Depends(video_qa_parameters)):
             video_file_path = item["video_url"]
             pattern = r'(https?://)?(www\.)?(youtube\.com/watch\?v=|youtu\.be/)[\w-]+(&\S+)?'
             match = re.match(pattern, item["video_url"])
+            yt = YouTube(item["video_url"])
+            response += "Video Title: " + yt.title + "\n"
+            response += "Video Author: " + yt.author + "\n"
             if match:
                 modeloutput = await get_gemini_response(item["video_url"], item["prompt"])
-                response += "Response from youtube extension: " +  modeloutput.text + '\n'
+                if "not supported" in modeloutput.text:
+                    print("Gemini API not supported, using Pytube instead.")
+                    stream = yt.streams.filter(file_extension='mp4').first()
+                    video_file_path = stream.download('./content/video/')
+                else:
+                    response += "Response from youtube extension: " +  modeloutput.text + '\n'
+                    return {"response": response}
             
 
         # Setup frame extraction using specified time frames if provided
