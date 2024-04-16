@@ -47,29 +47,28 @@ async def video_qa(item: dict = Depends(video_qa_parameters)):
             response += "Video Author: " + yt.author + "\n"
             if match:
                 modeloutput = await get_gemini_response(item["video_url"], item["prompt"])
-                if "not supported" in modeloutput.text:
+                if "not supported" or "not mentioned" in modeloutput.text:
                     print("Gemini API not supported, using Pytube instead.")
                     stream = yt.streams.filter(file_extension='mp4').first()
                     video_file_path = stream.download('./content/video/')
                 else:
                     response += "Response from youtube extension: " +  modeloutput.text + '\n'
                     return {"response": response}
-            
 
         # Setup frame extraction using specified time frames if provided
         extractor = FrameExtractor(video_file_path)
         extractor.extract_frames()
 
         uploader = FileUploader("./content/frames")
+        uploader.list_all_files()
         if item["start_time"] is not None and item["end_time"] is not None:
             uploader.upload_files(upload_range=(item["start_time"], item["end_time"]))
         else:
             uploader.upload_files()  # No specific range provided
-        uploader.list_files()
 
         ai_generator = AIContentGenerator()
-        response += "Response2:" + ai_generator.generate_content(item["prompt"], uploader.uploaded_files)
-        uploader.cleanup()
+        response += "Response2:" + ai_generator.generate_content(item["prompt"], uploader.current_files)
+        # uploader.cleanup()
 
     except RuntimeError as e:
         raise HTTPException(status_code=500, detail=str(e))

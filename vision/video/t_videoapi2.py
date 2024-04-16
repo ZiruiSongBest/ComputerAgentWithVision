@@ -137,6 +137,7 @@ class AIContentGenerator:
         print(response)
         return response.text
 
+
 Secure_1PSID = "g.a000iggwFFPzuhYOITv7WmT9ZZdlm-Oc9Jqqp1opKSxDLDGRZ_03Km2-olQw6ni-wMy0dl0JkQACgYKAdASAQASFQHGX2MiEE5mk6_c9r80g1tYmbuHxRoVAUF8yKrMuCOXQs0sExpj7WgFW2zC0076"
 Secure_1PSIDTS = "sidts-CjAB7F1E_Ex0_OrXlPR_aFqKVw8uzUrQaa4u0BBV3cZyypp4adJm2T996LhbnpAAwn4QAA"
 async def get_gemini_response(youtube_url, prompt):
@@ -147,3 +148,37 @@ async def get_gemini_response(youtube_url, prompt):
     response = await client.generate_content(f"@Youtube {youtube_url} {prompt}")
     
     return response
+
+if __name__ == "__main__":
+    
+    # video_file_name = "https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4"
+    video_file_name = "/Users/dylan/Desktop/1Res/osc/ComputerAgentWithVisionDev/content/video/Path of Ascension - Pelagos vs Kalisthene - Trial of Humility.mp4"
+    # extractor = FrameExtractor(video_file_name)
+    # extractor.extract_frames()
+    
+    uploader = FileUploader("./content/frames")
+    uploader.list_all_files()
+    
+    # for file in uploader.uploaded_files:
+        # file.timestamp = File.get_timestamp(file.display_name)
+        # print(file.timestamp)
+    uploader.upload_files(upload_range=(0, 10))
+    
+    
+    # files = sorted(files, key=lambda x: x.display_name)
+    
+    for file in uploader.current_files:
+        print(file.timestamp, file.response)
+    
+    # print(genai.get_file(test_name))
+    
+    # Create the AI content generator and make a request
+    ai_generator = AIContentGenerator()
+    prompt = "Describe this video."
+    # response = ai_generator.generate_content(prompt, uploader.current_files)
+    # print("AI Response:", response)
+
+    # uploader.cleanup()
+    # uploader.delete_all()
+    # pass
+ 

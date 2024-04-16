@@ -225,6 +225,24 @@ You should only respond with a reasoning process and a JSON result in the format
     }
 }
 ```
+```json
+{
+    "analyze_video_content": {
+        "name": "analyze_video_content",
+        "description": "Use the '/tools/video_qa' API to analyze the YouTube video at 'https://www.youtube.com/watch?v=tCaxFbNw8iM' with the prompt 'How many times is the Aspirant's Bindings ability used?'",
+        "dependencies": [],
+        "type": "API"
+    },
+    "report_frequency": {
+        "name": "report_frequency",
+        "description": "Report the number of times the 'Aspirant's Bindings' ability is used in the video based on the analysis from the previous task.",
+        "dependencies": [
+            "analyze_video_content"
+        ],
+        "type": "QA"
+    }
+}
+```
 
 And you should also follow the following criteria:
 1. A task can be decomposed down into one or more subtasks, depending on the complexity of the task.
