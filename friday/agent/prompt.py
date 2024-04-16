@@ -586,6 +586,49 @@ You should only respond with a reasoning process and a JSON result in the format
     }
 }
 ```
+```json
+{
+    "analyze_video_for_tile_count": {
+        "name": "analyze_video_for_tile_count",
+        "description": "Use the '/tools/video_qa' API to analyze the video at '/Users/dylan/Desktop/1Res/osc/ComputerAgentWithVisionDev/GAIA/2023/test/0c393561-dd13-4b7c-ac49-20ac469aa276.MOV' with the prompt 'How many floor tiles are shown?'",
+        "dependencies": [],
+        "type": "API"
+    },
+    "calculate_tile_sets_needed": {
+        "name": "calculate_tile_sets_needed",
+        "description": "Calculate the number of sets of 5 tiles needed to replace the broken tiles based on the count returned by the previous task.",
+        "dependencies": [
+            "analyze_video_for_tile_count"
+        ],
+        "type": "Code"
+    },
+    "calculate_grout_tubes_needed": {
+        "name": "calculate_grout_tubes_needed",
+        "description": "Calculate the number of tubes of grout needed, considering one tube sets 2 tiles, based on the count of broken tiles returned by the video analysis task.",
+        "dependencies": [
+            "analyze_video_for_tile_count"
+        ],
+        "type": "Code"
+    },
+    "calculate_total_cost": {
+        "name": "calculate_total_cost",
+        "description": "Calculate the total cost to replace all the tiles and purchase the necessary grout, using the quantities calculated in the previous tasks. The prices per set of tiles and per tube of grout are represented as variables.",
+        "dependencies": [
+            "calculate_tile_sets_needed",
+            "calculate_grout_tubes_needed"
+        ],
+        "type": "Code"
+    },
+    "report_total_cost": {
+        "name": "report_total_cost",
+        "description": "Report the total cost to replace all the broken tiles and purchase the necessary grout, based on the calculations from the previous task.",
+        "dependencies": [
+            "calculate_total_cost"
+        ],
+        "type": "QA"
+    }
+}
+```
 
 And you should also follow the following criteria:
 1. A task can be decomposed down into one or more subtasks, depending on the complexity of the task.

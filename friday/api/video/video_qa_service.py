@@ -47,6 +47,7 @@ async def video_qa(item: dict = Depends(video_qa_parameters)):
             response += "Video Author: " + yt.author + "\n"
             if match:
                 modeloutput = await get_gemini_response(item["video_url"], item["prompt"])
+                print(modeloutput)
                 if "not supported" or "not mentioned" in modeloutput.text:
                     print("Gemini API not supported, using Pytube instead.")
                     stream = yt.streams.filter(file_extension='mp4').first()

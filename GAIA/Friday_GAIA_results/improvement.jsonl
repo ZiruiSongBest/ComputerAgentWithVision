@@ -15,6 +15,12 @@
 {"task_id": "2131de62-c9b7-4f08-a28f-ccbd9e4809f3", "model_answer": "Lindsey"}
 {"task_id": "d82180c3-39f0-4008-a883-24d5226fc49b", "model_answer": "04:03", "reasoning_trace": ""}
 // {"task_id": "1b738608-485d-4456-98d3-31ad60f77284", "Question": "In the video of the 2022 finals on the Poetry By Heart homepage, how many judges are shown speaking?", "model_answer": "", "reasoning_trace": "Video https://poetrybyheart.org.uk/"}
+{"task_id": "f1746e25-adf7-4565-8365-56f3d3536c92", "Level": 2, "Question": "In the YouTuber slowbeef's playlist \"Blind Nuzlocke Pokemon (Grimer is the Best)\", what is the sum of the Pok\u00e9dex numbers for all Pok\u00e9mon that appear in the thumbnails for videos 22-26, omitting any Pok\u00e9mon that appear more than once?", "file_name": ""}
+{"task_id": "ed30357a-9648-49fd-8d34-a78e71d0984c", "Level": 2, "Question": "What is the percent decrease between videos uploaded by the YouTube channel \u201cNot Just Bikes\u201d in the year 2021, and videos uploaded by that same channel in the year 2022? Round to two decimal places.", "file_name": ""}
+{"task_id": "eb0292b5-a09a-451b-8cd1-a8671095a0d0", "Level": 2, "Question": "I was watching this YouTube video the other day. The thumbnail had this yellow cartoon character in it. Who is this character? The YouTube channel was called Not Just Bikes, and I was watching the video on June 19th or 20th when it was newly uploaded (and the year is 2023). Just tell me the character\u2019s first name.", "file_name": ""}
+
+
+
 
 // Model Ability Limit
 {"task_id": "7674ee67-d671-462f-9e51-129944749a0a", "model_answer": "Destroyer", "reasoning_trace": ""}
