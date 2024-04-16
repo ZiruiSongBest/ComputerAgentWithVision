@@ -1,8 +1,9 @@
 import os
+import re
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends
 from pydantic import BaseModel, Field
 from typing import Optional
-from .video_qa import FrameExtractor, FileUploader, AIContentGenerator
+from .video_qa import FrameExtractor, FileUploader, AIContentGenerator, get_gemini_response
 
 router = APIRouter()
 
@@ -25,6 +26,8 @@ async def video_qa(item: dict = Depends(video_qa_parameters)):
             raise HTTPException(status_code=400, detail="A video URL or video file is required.")
         
         video_file_path = ""
+        response = ""
+        
         if item["video_file"]:
             video_file_path = "./content/video/" + os.path.basename(item["video_file"].filename)
             directory = os.path.dirname(video_file_path)
@@ -36,6 +39,12 @@ async def video_qa(item: dict = Depends(video_qa_parameters)):
 
         elif item["video_url"]:
             video_file_path = item["video_url"]
+            pattern = r'(https?://)?(www\.)?(youtube\.com/watch\?v=|youtu\.be/)[\w-]+(&\S+)?'
+            match = re.match(pattern, item["video_url"])
+            if match:
+                modeloutput = await get_gemini_response(item["video_url"], item["prompt"])
+                response += "Response from youtube extension: " +  modeloutput.text + '\n'
+            
 
         # Setup frame extraction using specified time frames if provided
         extractor = FrameExtractor(video_file_path)
@@ -49,7 +58,7 @@ async def video_qa(item: dict = Depends(video_qa_parameters)):
         uploader.list_files()
 
         ai_generator = AIContentGenerator()
-        response = ai_generator.generate_content(item["prompt"], uploader.uploaded_files)
+        response += "Response2:" + ai_generator.generate_content(item["prompt"], uploader.uploaded_files)
         uploader.cleanup()
 
     except RuntimeError as e:

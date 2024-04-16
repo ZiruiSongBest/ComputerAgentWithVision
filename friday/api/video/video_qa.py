@@ -4,6 +4,8 @@ import cv2
 import google.generativeai as genai
 import dotenv
 from typing import List
+import asyncio
+from gemini_webapi import GeminiClient
 
 dotenv.load_dotenv()
 
@@ -114,3 +116,13 @@ class AIContentGenerator:
             request.append(file.response)
         response = self.model.generate_content(request, request_options={"timeout": 600})
         return response.text
+
+async def get_gemini_response(youtube_url, prompt):
+    # Initialize GeminiClient
+    client = GeminiClient(proxies=None)
+    await client.init(timeout=30, auto_close=False, close_delay=300, auto_refresh=True)
+    
+    # Generate content using GeminiClient
+    response = await client.generate_content(f"@Youtube {youtube_url} {prompt}")
+    
+    return response

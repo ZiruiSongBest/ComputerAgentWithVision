@@ -89,7 +89,7 @@ class FileUploader:
         for file in self.uploaded_files:
             genai.delete_file(file.name)
             print(f'Deleted {file.display_name}.')
-        print(f"Completed deleting files.\n\nDeleted: {len(uploaded_files)} files")
+        print(f"Completed deleting files.\n\nDeleted: {len(self.uploaded_files)} files")
     
     def delete_all(self):
         uploaded_files = []
@@ -134,5 +134,5 @@ if __name__ == "__main__":
 
     uploader.cleanup()
     # uploader.delete_all()
-    pass
+    # pass
  
