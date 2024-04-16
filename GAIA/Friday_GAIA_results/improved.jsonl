@@ -14,3 +14,4 @@
 {"task_id": "2131de62-c9b7-4f08-a28f-ccbd9e4809f3", "model_answer": "Belle", "Level": 1, "Question": "In the video located at https://www.youtube.com/watch?v=X-AjhXhk19U, what character is playing the violin throughout the video?", "file_name": ""}
 {"task_id": "e463d411-6260-4d93-b5b4-6d9b1f619d5c", "model_answer": "3", "Level": 2, "Question": "In this YouTube video, how many times is the Aspirant's Bindings ability used? https://www.youtube.com/watch?v=tCaxFbNw8iM", "file_name": ""}
 {"task_id": "0c393561-dd13-4b7c-ac49-20ac469aa276", "model_answer": "107", "Level": 3, "Question": "If I break all the floor tiles shown in this video and I can buy them in sets of 5 for $40, how many dollars will I have to spend to replace all the tiles if I also have to get grout that will set 2 tiles each tube for $9 a tube?", "file_name": "0c393561-dd13-4b7c-ac49-20ac469aa276.MOV"}
+{"task_id": "d82180c3-39f0-4008-a883-24d5226fc49b", "model_answer": "04:17", "reasoning_trace": ""}

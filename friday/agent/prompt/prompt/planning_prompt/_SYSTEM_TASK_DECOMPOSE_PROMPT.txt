@@ -286,7 +286,40 @@ You should only respond with a reasoning process and a JSON result in the format
     }
 }
 ```
-
+```json
+{
+    "search_nasa_twitter_post": {
+        "name": "search_nasa_twitter_post",
+        "description": "Use the '/tools/bing/searchv2' API to search for the NASA twitter two sleeping astronauts.",
+        "dependencies": [],
+        "type": "API"
+    },
+    "open_webpage_with_browser": {
+        "name": "open_webpage_with_browser",
+        "description": "Open the web page with the first url get from search api using Google Chrome",
+        "dependencies": [
+            "search_nasa_twitter_post"
+        ],
+        "type": "Code"
+    },
+    "observe_webpage_for_information": {
+        "name": "observe_webpage_for_information",
+        "description": "Observe the current page for information.",
+        "dependencies": [
+            "open_webpage_with_browser"
+        ],
+        "type": "Vision"
+    },
+    "format_date": {
+        "name": "format_date",
+        "description": "Format the extracted date into MM:DD format, ensuring to include leading zeros if necessary.",
+        "dependencies": [
+            "observe_webpage_for_information"
+        ],
+        "type": "QA"
+    }
+}
+```
 And you should also follow the following criteria:
 1. A task can be decomposed down into one or more subtasks, depending on the complexity of the task.
 2. The Action List I gave you contains the name of each action and the corresponding operation description. These actions are all atomic code tasks. You can refer to these atomic operations to decompose the code task.
