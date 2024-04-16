@@ -811,6 +811,46 @@
                     }
                 }
             }
+        },
+        "/tools/video_qa": {
+            "post": {
+                "summary": "Video Qa",
+                "operationId": "video_qa_tools_video_qa_post",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/components/schemas/Body_video_qa_tools_video_qa_post"
+                                    }
+                                ],
+                                "title": "Body"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -941,6 +981,69 @@
                 },
                 "type": "object",
                 "title": "Body_image_search_tools_image_caption_post"
+            },
+            "Body_video_qa_tools_video_qa_post": {
+                "properties": {
+                    "prompt": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Prompt",
+                        "default": "Describe this video."
+                    },
+                    "video_url": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Video Url"
+                    },
+                    "video_file": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "binary"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Video File"
+                    },
+                    "start_time": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Start Time"
+                    },
+                    "end_time": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "End Time"
+                    }
+                },
+                "type": "object",
+                "title": "Body_video_qa_tools_video_qa_post"
             },
             "CalendarEvent": {
                 "properties": {

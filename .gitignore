@@ -509,3 +509,4 @@ dist
 
 !/GAIA/success_logs/*.log
 GAIA/2023/
+content/

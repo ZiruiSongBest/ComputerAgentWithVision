@@ -23,6 +23,7 @@ from friday.api.shell.shell import router as shell_router
 from friday.api.translate.translate import router as translate_router
 from friday.api.weather.weather import router as weather_router 
 from friday.api.wolfram_alpha.wolfram_alpha import router as wa_router
+from friday.api.video.video_qa_service import router as video_router
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -60,11 +61,12 @@ services = {
     "markdown": markdown_router,
     "audio2text": audio2text_router,  # Added audio2text service
     "image_caption": image_caption_router,  # Added image caption service
-    "translate": translate_router  # Added translate service
+    "translate": translate_router,  # Added translate service
+    "videoQA": video_router  # Added video service
 }
 
 server_list = ["python_executor", "calculator","arxiv","bing","shell","ppt",
-               "database","wolframalpha","weather","calendar","gmail","markdown", "audio2text", "image_caption", "translate"]
+               "database","wolframalpha","weather","calendar","gmail","markdown", "audio2text", "image_caption", "translate", "videoQA"]
 
 # Include only the routers for the services listed in server_list
 for service in server_list:
