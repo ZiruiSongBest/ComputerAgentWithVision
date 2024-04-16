@@ -5,6 +5,8 @@
 {"checked": "", "task_id": "e87720bf-7dbe-49c2-b91c-bfc23b14d157", "model_answer": "1000", "reasoning_trace": "HuggingFace twitter account announced an open source AI event in SF in 2023 with expanded capacity"}
 {"checked": "tbd", "task_id": "21aba0e0-03d6-4541-b467-a0384ca5298a", "model_answer": "orange", "backgound":"Search Rihanna twitter Dec 2021 Santa Claus "}
 {"task_id": "35320d83-246a-4367-8ed8-c04a93c68daa", "model_answer": "4" }
+{"task_id": "d82180c3-39f0-4008-a883-24d5226fc49b", "model_answer": "04:03", "reasoning_trace": ""}
+{"task_id": "2131de62-c9b7-4f08-a28f-ccbd9e4809f3", "model_answer": "Lindsey"}
 
 // Vision Task
 
@@ -12,15 +14,10 @@
 {"checked": "", "task_id": "d6059b3e-e1da-43b4-ac26-ecad2984909b", "Question": "Of the bricks in this set inventory that appear in 5 sets total, what is the name of the one that appears most by count in all LEGO sets on Brickset?", "file_name": "d6059b3e-e1da-43b4-ac26-ecad2984909b.csv", "model_answer": "MINI HAT", "reasoning_trace": ""}
 
 // Videos
-{"task_id": "2131de62-c9b7-4f08-a28f-ccbd9e4809f3", "model_answer": "Lindsey"}
-{"task_id": "d82180c3-39f0-4008-a883-24d5226fc49b", "model_answer": "04:03", "reasoning_trace": ""}
 // {"task_id": "1b738608-485d-4456-98d3-31ad60f77284", "Question": "In the video of the 2022 finals on the Poetry By Heart homepage, how many judges are shown speaking?", "model_answer": "", "reasoning_trace": "Video https://poetrybyheart.org.uk/"}
 {"task_id": "f1746e25-adf7-4565-8365-56f3d3536c92", "Level": 2, "Question": "In the YouTuber slowbeef's playlist \"Blind Nuzlocke Pokemon (Grimer is the Best)\", what is the sum of the Pok\u00e9dex numbers for all Pok\u00e9mon that appear in the thumbnails for videos 22-26, omitting any Pok\u00e9mon that appear more than once?", "file_name": ""}
 {"task_id": "ed30357a-9648-49fd-8d34-a78e71d0984c", "Level": 2, "Question": "What is the percent decrease between videos uploaded by the YouTube channel \u201cNot Just Bikes\u201d in the year 2021, and videos uploaded by that same channel in the year 2022? Round to two decimal places.", "file_name": ""}
 {"task_id": "eb0292b5-a09a-451b-8cd1-a8671095a0d0", "Level": 2, "Question": "I was watching this YouTube video the other day. The thumbnail had this yellow cartoon character in it. Who is this character? The YouTube channel was called Not Just Bikes, and I was watching the video on June 19th or 20th when it was newly uploaded (and the year is 2023). Just tell me the character\u2019s first name.", "file_name": ""}
-
-
-
 
 // Model Ability Limit
 {"task_id": "7674ee67-d671-462f-9e51-129944749a0a", "model_answer": "Destroyer", "reasoning_trace": ""}
