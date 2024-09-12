@@ -11,22 +11,6 @@ from utils.KEY_TOOL import IOEnvironment
 from utils.logger import Logger
 from vision.prompt.prompt import prompt
 
-'''
-1. 读取task, 并且执行操作
-2. 检查task是否完成
-返回结果
-
-1. entertext: 输入一系列文本
-2. click: 点击某个位置
-3. click_and_enter: 点击某个位置，然后输入一系列文本
-4. scroll
-# 3. drag: 拖拽某个位置
-# 4. select: 选择某个位置
-# 5. wait: 等待一段时间
-
-
-包含调用系统KEY_TOOL的各种操作, 还有键入等
-'''
 class VisionExecutor:
     def __init__(self, template_file_path: str = None, llm_provider: OpenAIProvider = None, seeclick: SeeClick = None, omnilmm: OmniLMM = None, screen_helper: ScreenHelper = None, key_tool: IOEnvironment = None, system_version: str = None, logger: Logger = None) -> None:
         # Helpers

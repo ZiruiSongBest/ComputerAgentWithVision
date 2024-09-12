@@ -5,7 +5,7 @@ from typing import Union, Dict
 from utils.screen_helper import ScreenHelper
 
 class OmniLMM:
-    def __init__(self, screen_helper: ScreenHelper, url: str = 'http://100.119.14.85:8998/omni', prompt_template: str = "What text on the search box?"):
+    def __init__(self, screen_helper: ScreenHelper, url: str = 'http://localhost:8998/omni', prompt_template: str = "What text on the search box?"):
         self.url = url
         self.prompt_template = prompt_template
         self.screen_helper = screen_helper

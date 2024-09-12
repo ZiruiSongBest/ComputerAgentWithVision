@@ -11,7 +11,7 @@ def main():
     parser = argparse.ArgumentParser(description='Inputs')
     parser.add_argument('--action_lib_path', type=str, default='friday/action_lib', help='tool repo path')
     parser.add_argument('--config_path', type=str, default='.env', help='openAI config file path')
-    parser.add_argument('--query', type=str, default="I want to open google chrome browser, and use vision actions to search Sound Euphonium", help='Enter your task or simply press enter to execute the fallback task: "Move the text files containing the word \'agent\' from the folder named \'document\' to the path \'working_dir/agent\'"')
+    parser.add_argument('--query', type=str, default="I want to open google chrome browser, and use vision actions to search Friends Series", help='Enter your task or simply press enter to execute the fallback task: "Move the text files containing the word \'agent\' from the folder named \'document\' to the path \'working_dir/agent\'"')
     parser.add_argument('--query_file_path', type=str, default='', help='Enter the path of the files for your task or leave empty if not applicable')
     parser.add_argument('--logging_filedir', type=str, default='log', help='log path')
     parser.add_argument('--logging_filename', type=str, default='temp.log', help='log file name')

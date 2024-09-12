@@ -9,14 +9,8 @@ from vision.grounding.omnilmm import OmniLMM
 from utils.screen_helper import ScreenHelper
 from utils.KEY_TOOL import IOEnvironment
 from utils.logger import Logger
-
-
-'''
-综合planner和executor
-1. 接受来自Friday的task，通过vision planner规划，生成vision task
-2. 通过vision executor执行vision task
-3. 返回结果
-'''
+from dotenv import load_dotenv
+import os
 
 '''
 Vision Task Categories:
@@ -24,6 +18,8 @@ Click, Enter, Scroll, Observe
 # 4. keyboard
 # 5. observation
 '''
+
+load_dotenv()
 class Vision:
     def __init__(self, llm_provider_config_path: str = "./vision/config/openai_config.json", logger: Logger = None) -> None:
         # Helpers
@@ -32,8 +28,8 @@ class Vision:
         self.llm_provider.init_provider(llm_provider_config_path)
         self.screen_helper = ScreenHelper()
         self.key_tool = IOEnvironment()
-        self.seeclick = SeeClick(screen_helper=self.screen_helper)
-        self.omnilmm = OmniLMM(screen_helper=self.screen_helper)
+        self.seeclick = SeeClick(screen_helper=self.screen_helper, url=os.getenv('SEECLICK_URL') + '/seeclick')
+        self.omnilmm = OmniLMM(screen_helper=self.screen_helper, url=os.getenv('OMNILMM_URL') + '/omni')
         
         # variables
         self.system_version = get_os_name()

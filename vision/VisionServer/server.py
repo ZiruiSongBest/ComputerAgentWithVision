@@ -1,6 +1,6 @@
 import os
-model_cache_directory = '/osc/model_cache'
-os.environ['HF_HOME'] = model_cache_directory
+# model_cache_directory = '/osc/model_cache'
+# os.environ['HF_HOME'] = model_cache_directory
 from transformers.file_utils import default_cache_path
 cache_dir = default_cache_path
 print(f"loading models from: {cache_dir}")
