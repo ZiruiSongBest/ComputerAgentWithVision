@@ -2,7 +2,8 @@ import logging
 import os
 import sys
 from colorama import Fore, Back, Style, init
-from utils.singleton import Singleton
+from utils import json_utils
+# from utils.singleton import Singleton
 
 init(autoreset=True)  # Initializes colorama to auto-reset the color codes after each print
 
@@ -20,7 +21,7 @@ class ColorFormatter(logging.Formatter):
         record.msg = f"{color}{str(record.msg)}{Style.RESET_ALL}"
         return super().format(record)
 
-class Logger(metaclass=Singleton):
+class Logger():
     COLOR_MAP = {
         "red": Fore.RED,
         "green": Fore.GREEN,
@@ -60,7 +61,9 @@ class Logger(metaclass=Singleton):
         logger = logging.getLogger(self.log_prefix)
         logger.setLevel(self.level)
 
-        formatter = logging.Formatter(f'[{self.log_prefix}] %(asctime)s - %(levelname)s - %(message)s')
+        # formatter = logging.Formatter(f'[{self.log_prefix}] %(asctime)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(f'[{self.log_prefix}] %(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s')
+
         c_formatter = ColorFormatter(formatter._fmt)
 
         file_handler = logging.FileHandler(log_path)
@@ -93,3 +96,6 @@ class Logger(metaclass=Singleton):
 
     def debug(self, message, title="", color="green"):
         self.log(message, logging.DEBUG, title, color)
+
+    def write_json(self, message, file_name='task_sequence.json'):
+        json_utils.save_json(message, file_name=file_name, file_path=self.log_dir, indent=4)

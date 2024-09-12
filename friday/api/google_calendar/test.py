@@ -1,5 +1,8 @@
 import requests
 import json
+import os
+
+BASE_URL = os.getenv("BASE_URL", "http://localhost:8998")
 
 # 用于测试的日历事件
 test_event = {
@@ -17,7 +20,7 @@ test_event = {
 }
 
 # 向API发送请求
-response = requests.post("http://127.0.0.1:8079/calendar/insert_event", json=test_event)
+response = requests.post(BASE_URL + "/calendar/insert_event", json=test_event)
 
 # 解析响应
 if response.status_code == 200:

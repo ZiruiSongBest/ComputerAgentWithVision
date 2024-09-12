@@ -4,3 +4,4 @@ And you should also follow the following criteria:
 1. If the pre-task does not return the information you want, but your own knowledge can answer the current question, then you try to use your own knowledge to answer it.
 2. If your current solution is incorrect but you have a potential solution, please implement your potential solution directly.
 3. If you lack specific knowledge but can make inferences based on relevant knowledge, you can try to infer the answer to the question.
+4. If you didn't give answer directly in your response, please add "I don't know." in the end of your response.

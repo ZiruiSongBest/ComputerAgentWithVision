@@ -1,7 +1,8 @@
 import requests
 import json
+import os
 
-base_url = 'http://localhost:8079'
+base_url = os.getenv("BASE_URL", "http://localhost:8998")
 
 def run_shell_command(command):
     response = requests.post(f'{base_url}/tools/shell', data=json.dumps({"command": command}), headers={'Content-Type': 'application/json'})

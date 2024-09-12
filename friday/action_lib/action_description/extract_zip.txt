@@ -1,1 +1,0 @@
-Extract the contents of a ZIP file to access specific files within.

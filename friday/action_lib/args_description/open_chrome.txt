@@ -1,8 +1,0 @@
-Executes the system command to open Google Chrome on macOS.
-
-        Args:
-            *args: Variable length argument list.
-            **kwargs: Arbitrary keyword arguments.
-
-        Returns:
-            None, but prints a message confirming the execution of the command.

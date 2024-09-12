@@ -1,0 +1,4 @@
+Currently, you have following task/tasks to complete: 
+{all_task_info}
+After this vision task, the system will continue to do: {next_action}
+System Version: {system_version}

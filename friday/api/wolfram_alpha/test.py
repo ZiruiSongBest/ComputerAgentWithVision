@@ -1,8 +1,11 @@
 import requests
 import json
+import os
+
+BASE_URL = os.getenv("BASE_URL", "http://localhost:8998")
 
 # API endpoint
-url = "http://43.159.144.130:8079/tools/wolframalpha"
+url = f"{BASE_URL}/tools/wolframalpha"
 
 # Headers
 headers = {

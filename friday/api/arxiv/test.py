@@ -1,8 +1,13 @@
 import requests
+import json
+import os
+
+BASE_URL = os.getenv("BASE_URL", "http://localhost:8998")
 
 response = requests.get(
-    'http://43.159.144.130:8079/tools/arxiv',
-    json={'query': 'autogen'}
+    BASE_URL + '/tools/arxiv',
+    json={'query': 'BenchLMM'}
 )
 
-print(response.json())
+# print(response.json())
+print(json.dumps(response.json(), indent=4))

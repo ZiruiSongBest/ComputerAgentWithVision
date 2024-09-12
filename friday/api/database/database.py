@@ -12,7 +12,8 @@ class SQLRequest(BaseModel):
 
 
 def execute_sql(queries: List[str]):
-    conn = sqlite3.connect('./tasks/travel/database/travel.db')
+    # conn = sqlite3.connect('./tasks/travel/database/travel.db')
+    conn = sqlite3.connect('friday/api/database/task/travel.db')
     cursor = conn.cursor()
 
     results = []

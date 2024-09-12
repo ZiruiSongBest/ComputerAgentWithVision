@@ -16,6 +16,7 @@ class FridayExecutor:
         else:
             result = self.execute_agent.question_and_answer_action(pre_tasks_info, task, description)
         self.logging.info(result, title='QA Result', color='green')
+        return result
 
     def retrieve_existing_action(self, description):
         retrieve_name = self.retrieve_agent.retrieve_action_name(description, 3)
@@ -34,17 +35,20 @@ class FridayExecutor:
         self.logging.info(f"The subtask result is: {json.dumps(output, indent=4)}", title='Execution Result', color='grey')
         return state
     
-    def plan_task(self, task):
+    def plan_task(self, task, replan=False):
         self.logging.info(task, title='Task', color='green')
         # relevant action
         retrieve_action_name = self.retrieve_agent.retrieve_action_name(task)
         retrieve_action_description_pair = self.retrieve_agent.retrieve_action_description_pair(retrieve_action_name)
 
         # task planner
-        self.planning_agent.decompose_task(task, retrieve_action_description_pair)
+        if not replan:
+            self.planning_agent.decompose_task(task, retrieve_action_description_pair)
+        else:
+            self.planning_agent.redecompose_task(task, retrieve_action_description_pair, self.planning_agent.execute_list[0])
     
     def execute_task(self, task, action, action_node, pre_tasks_info):
-        self.logging.debug("The current task is: {task}".format(task=task))
+        # self.logging.debug("The current task is: {task}".format(task=task))
         type = action_node.type
         next_action = action_node.next_action
         description = action_node.description
@@ -55,7 +59,9 @@ class FridayExecutor:
         relevant_code = {}
         
         if type == 'QA':
-            self.handle_qa_type(pre_tasks_info, task, description)
+            result = self.handle_qa_type(pre_tasks_info, task, description)
+            if "I don't know" in result:
+                return ['fail', ]
         else:
             invoke = ''
             if type == 'API':
@@ -109,6 +115,7 @@ class FridayExecutor:
                     if score >= self.score:
                         self.execute_agent.store_action(action, code)
         return ['success', result, relevant_code]
+
 # Usage example
 # friday_executor = FridayExecutor(planning_agent, execute_agent, retrieve_agent)
 # friday_executor.execute_task(type, pre_tasks_info, task, description, action, next_action)

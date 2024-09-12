@@ -1,9 +1,10 @@
 # test_weather_api.py
 
 import requests
+import os
 
 def test_query_weather():
-    base_url = "http://127.0.0.1:8079"
+    base_url = os.getenv("BASE_URL", "http://localhost:8998")
     date = "2023-07-01"
     city = "Beijing"
 

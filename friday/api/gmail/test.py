@@ -4,15 +4,15 @@ import requests
 import json
 
 # 基础URL
-BASE_URL = "http://127.0.0.1:8079"
+BASE_URL = os.getenv("BASE_URL", "http://localhost:8998")
 
 # 测试邮件发送API
 def test_send_email():
     print("Testing: Send Email API")
 
     data = {
-        "from_email": "wyx7653@gmail.com",
-        "to_email": "2115492705@qq.com",
+        "from_email": "hang20145@gmail.com",
+        "to_email": "yaohang.li@student.uts.edu.au",
         "subject": "Test Subject",
         "content": "This is a test email."
     }

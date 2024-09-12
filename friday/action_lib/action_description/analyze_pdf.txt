@@ -1,1 +1,0 @@
-Analyze the content of the extracted PDF file to identify applicants and their qualifications.

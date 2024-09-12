@@ -1,21 +1,24 @@
 import requests
-from langchain.utilities import BingSearchAPIWrapper
+from langchain_community.utilities import BingSearchAPIWrapper
 from bs4 import BeautifulSoup
 from typing import Tuple
 from enum import Enum
+from dotenv import load_dotenv
 from .web_loader import WebPageLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
 from langchain.chains.summarize import load_summarize_chain
-from langchain import OpenAI
+from langchain_openai import OpenAI
 import os
 
+load_dotenv()
+
 # Set bing search and OpenAPI Key
-os.environ["BING_SUBSCRIPTION_KEY"] = ""
+# os.environ["BING_SUBSCRIPTION_KEY"] = ""
 os.environ["BING_SEARCH_URL"] = "https://api.bing.microsoft.com/v7.0/search"
-os.environ["OPENAI_API_KEY"] = ""
-os.environ["OPENAI_ORGANIZATION"] = ""
+# os.environ["OPENAI_API_KEY"] = ""
+# os.environ["OPENAI_ORGANIZATION"] = ""
 
 SEARCH_RESULT_LIST_CHUNK_SIZE = 3
 RESULT_TARGET_PAGE_PER_TEXT_COUNT = 500

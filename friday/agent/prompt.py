@@ -221,6 +221,11 @@ And the code you write should also follow the following criteria:
 Now you will be provided with the following information, please write python code to accomplish the task and be compatible with system environments, versions and language according to these information.
 ''',
         # Task judge prompt in os
+        '_SYSTEM_TASK_JUDGE_SUMMARY_PROMPT': '''
+I have a complex code that generates extensive outputs, making it challenging to analyze or interpret due to its length and depth. The output may include various data types, e.g. numerical values, text strings, and possibly error messages or logs. 
+It's crucial for my analysis to understand the overall structure, trends, and any anomalies or critical insights that emerge from this output without getting bogged down by the sheer volume of information. Could you provide a condensed summary that captures the essence of the output? Highlight the key components, any discernible patterns, and significant outliers or errors that could impact the interpretation. This summary will guide my further analysis and decision-making process.
+''',
+        # Task judge prompt in os
         '_SYSTEM_TASK_JUDGE_PROMPT': '''
 You are an AI program expert to verify Python code against a user's task requirements.
 Your goal is to determine if the provided Python code accomplishes the user's specified task based on the feedback information, And score the code based on the degree of generalizability of the code.
@@ -267,6 +272,10 @@ Working Directiory: {working_dir}
 Files And Folders in Current Working Directiory: {files_and_folders}
 ''',
         # Code error judge prompt in osCode error judge prompt in os
+        '_SYSTEM_RETURN_VAL_SUMMARY_PROMPT': '''
+You are an agent who just finished executing a code, and you get a really long response. Later on, other agents will read the return value to understand the results of the current task. Please help me summarize what the code just did, and keep the main content of the current return results.
+''',
+        # Code error judge prompt in osCode error judge prompt in os
         '_SYSTEM_ERROR_ANALYSIS_PROMPT': '''
 You are an expert in analyzing Python code errors, you are able to make an accurate analysis of different types of errors, and your return results adhere to a predefined format and structure.
 Your goal is to analyze the errors that occur in the execution of the code provided to you, and determine whether the type of error is one that requires external additions (e.g., missing dependency packages, environment configuration issues, version incompatibility, etc.) or one that only requires internal changes to the code (e.g., syntax errors, logic errors, data type errors).
@@ -302,7 +311,7 @@ def request(self, api_path, method, params=None, content_type=None):
 :param method: get/post
 :param params: the parameters of the API, can be None.You cannot pass files to 'params' parameter.All files should be passed to 'files' parameter. 
 :param files: files to be uploaded, can be None.Remember if the parameters of the API contain files, you need to use the 'files' parameter to upload the files.
-:param content_type: the content_type of api, e.g., application/json, multipart/form-data, can be None
+:param content_type: the content_type of api, e.g., application/json, multipart/form-data, can be None, you should pass in content_type!!!!!!! For example, if you read that 'request_body_format': 'multipart/form-data', you must explicitly pass 'content_type' as 'multipart/form-data'.
 :return: the response from the API
 """
 Please begin your code completion:
@@ -321,6 +330,7 @@ And you should also follow the following criteria:
 1. If the pre-task does not return the information you want, but your own knowledge can answer the current question, then you try to use your own knowledge to answer it.
 2. If your current solution is incorrect but you have a potential solution, please implement your potential solution directly.
 3. If you lack specific knowledge but can make inferences based on relevant knowledge, you can try to infer the answer to the question.
+4. If you didn't give answer directly in your response, please add "I don't know." in the end of your response.
 ''',
         # QA prompt in os
         '_USER_QA_PROMPT': '''
@@ -335,9 +345,465 @@ You are an expert in making plans.
 I will give you a task and ask you to decompose this task into a series of subtasks. Each subtask is an atomic operation. Through the execution of sorting of subtasks, I can complete the entire task.
 You should only respond with a reasoning process and a JSON result in the format as described below:
 1. Carry out step-by-step reasoning based on the given task until the task is completed. Each step of reasoning is decomposed into sub-tasks. For example, the current task is to reorganise the text files containing the word 'agent' in the folder called document into the folder called agent. Then the reasoning process is as follows: According to Current Working Directory and Files And Folders in Current Working Directory information, the folders document and agent exist, so firstly, retrieve the txt text in the folder call document in the working directory. If the text contains the word a"agent", save the path of the text file into the list, and return. Secondly, put the retrieved files into a folder named agent based on the file path list obtained by executing the previous task.
-2. There are five types of subtasks, the first is a task that requires the use of APIs to access internet resources to obtain information, such as retrieving information from the Internet, this type of task is called 'API subtask', and all available APIs are only listed in the API List. The second is a task that does not require the use of API tools but need to write code to complete, which is called 'Code subtask', 'Code subtask' usually only involves operating system or file operations. The third task is called "Vision subtask", which there's a vision module that can click, enter text, scroll screen, and read screen text to finish the subtask. The fourth is a task that need a Large video model to understand the video, which is called "Video task". The fifth is called 'QA subtask', It is no need to write code, call APIs, observe screenshots, or understand videos to complete the task, it will analyse the current subtask description and the return results of the predecessor tasks to get an appropriate answer.
-3. Each decomposed subtask has four attributes: name, task description, and dependencies. 'name' abstracts an appropriate name based on the reasoning process of the current subtask. 'description' is the process of the current subtask, and if the current task is related to a corresponding file operation, the path to the file needs to be written in the 'description'. 'dependencies' refers to the list of task names that the current task depends on based on the reasoning process. These tasks must be executed before the current task. 'type' indicates whether the current task is a Code task or a API task or a Vision task or a video task or a QA task, If it is a Code task, its value is 'Code', if it is a API task, its value is 'API', if it is a Vision task, its value is "Vision", if it a video task, Its value is "Video", if it is a QA task, its value is 'QA'.
-4. In JSON, each decomposed subtask contains four attributes: name, description, dependencies and type, which are obtained through reasoning about the task. The key of each subtask is the 'name' attribute of the subtask.
+2. There are four types of subtasks. The first is known as a 'Code subtask,' which involves tasks that do not require API usage but necessitate coding, often related to system or file operations. The second type is termed 'API subtask,' involving tasks that require accessing internet resources via APIs to gather information, with all permissible APIs detailed exclusively in the API List. API cannot answer any questions for you, it will only get search results. The third type is the 'Vision subtask,' where a vision module is employed to perform actions like clicking, entering text, scrolling the screen, watching videos, reading screen text and screen QA. The fourth task is the 'QA subtask,' which does not require coding, API calls, screenshot analysis, or video understanding; it instead focuses on analyzing the current subtask description and the outcomes of preceding tasks to derive a suitable response.
+3. Each decomposed subtask has four attributes: name, task description, and dependencies. 'name' abstracts an appropriate name based on the reasoning process of the current subtask. 'description' is the process of the current subtask, and if the current task is related to a corresponding file operation, the path to the file needs to be written in the 'description'. 'dependencies' refers to the list of task names that the current task depends on based on the reasoning process. These tasks must be executed before the current task. 'type' indicates whether the current task is a Code task or a API task or a Vision task or a video task or a QA task, If it is a Code task, its value is 'Code', if it is a API task, its value is 'API', if it is a Vision task, its value is "Vision", if it is a QA task, its value is 'QA'.
+4. The Vision module also have a subplanner, which be able to plan and execute smaller tasks. 
+5. In JSON, each decomposed subtask contains four attributes: name, description, dependencies and type, which are obtained through reasoning about the task. The key of each subtask is the 'name' attribute of the subtask.
+5. Continuing with the example in 1, the format of the JSON data I want to get is as follows:
+```json
+{
+    "download_pdf": {
+        "name": "download_pdf",
+        "description": "Download the PDF document from 'https://www.fao.org/3/ca8753en/ca8753en.pdf' and save it to the local file system.",
+        "dependencies": [],
+        "type": "Code"
+    },
+    "convert_pdf_to_text": {
+        "name": "convert_pdf_to_text",
+        "description": "Convert the downloaded PDF document into text for analysis.",
+        "dependencies": [
+            "download_pdf"
+        ],
+        "type": "Code"
+    },
+    "report_result": {
+        "name": "report_result",
+        "description": "answer the question: 'What is the difference between the number of times the word 'food' appears in the PDF document and the number of times the word 'agriculture' appears in the PDF document?'",
+        "dependencies": [
+            "convert_pdf_to_text"
+        ],
+        "type": "QA"
+    }
+}
+```
+```json
+{
+  "data_overview": {
+    "name": "data_overview",
+    "description": "Load the dataset from '/mnt/data/d6059b3e-e1da-43b4-ac26-ecad2984909b.csv' to display the first few rows of the dataframe, in order to understand its structure and identify the relevant columns for analysis.",
+    "dependencies": [],
+    "type": "Code"
+  },
+  "identify_most_common_part": {
+    "name": "identify_most_common_part",
+    "description": "Filter the data located at '/mnt/data/d6059b3e-e1da-43b4-ac26-ecad2984909b.csv' for parts that appear in exactly 5 sets and then aggregate the quantities of these parts across all sets to find the one with the highest total count.",
+    "dependencies": ["data_overview"],
+    "type": "Code"
+  },
+  "retrieve_brick_name": {
+    "name": "retrieve_brick_name",
+    "description": "Extract the name of the brick that has been identified as having the highest count among those appearing in exactly 5 sets.",
+    "dependencies": ["identify_most_common_part"],
+    "type": "QA"
+  }
+}
+```
+```json
+{
+    "load_dataset": {
+        "name": "load_dataset",
+        "description": "Load the dataset from '/Users/dylan/Desktop/1Res/osc/GAIA/2023/test/d6059b3e-e1da-43b4-ac26-ecad2984909b.csv' to analyze its structure and identify relevant columns for further analysis.",
+        "dependencies": [],
+        "type": "Code"
+    },
+    "filter_bricks_in_5_sets": {
+        "name": "filter_bricks_in_5_sets",
+        "description": "Filter the loaded dataset '/Users/dylan/Desktop/1Res/osc/GAIA/2023/test/d6059b3e-e1da-43b4-ac26-ecad2984909b.csv' to find bricks that appear in exactly 5 sets.",
+        "dependencies": [
+            "load_dataset"
+        ],
+        "type": "Code"
+    },
+    "aggregate_bricks_counts": {
+        "name": "aggregate_bricks_counts",
+        "description": "Aggregate the counts of the filtered bricks across all sets to find the total count of each brick.",
+        "dependencies": [
+            "filter_bricks_in_5_sets"
+        ],
+        "type": "Code"
+    },
+    "identify_highest_count_brick": {
+        "name": "identify_highest_count_brick",
+        "description": "Identify the brick with the highest count among those that appear in exactly 5 sets.",
+        "dependencies": [
+            "aggregate_bricks_counts"
+        ],
+        "type": "Code"
+    },
+    "retrieve_brick_name": {
+        "name": "retrieve_brick_name",
+        "description": "Retrieve the name of the brick identified as having the highest count among those appearing in exactly 5 sets.",
+        "dependencies": [
+            "identify_highest_count_brick"
+        ],
+        "type": "QA"
+    }
+}
+```
+```json
+{
+  "analyze_text_file": {
+    "name": "analyze_text_file",
+    "description": "Extract the basic text structure (line counts, word counts etc) and information of the text file located at '/Users/dylan/Desktop/1Res/osc/GAIA/2023/test/f1ba834a-3bcb-4e55-836c-06cc1e2ccb9f.txt'",
+    "dependencies": [],
+    "type": "Code"
+  },
+
+  "search_for_culprit_introduction": {
+    "name": "search_for_culprit_introduction",
+    "description": "Search through the content in the text file '/Users/dylan/Desktop/1Res/osc/GAIA/2023/test/f1ba834a-3bcb-4e55-836c-06cc1e2ccb9f.txt' to find the line where the word 'culprit' is introduced. The 'culprit' is a term that is mentioned in the text file. Return the line number where the 'culprit' is introduced.",
+    "dependencies": [
+      "analyze_text_file"
+    ],
+    "type": "Code"
+  },
+
+  "return_line_number": {
+    "name": "return_line_number",
+    "description": "Return the line number where the culprit is introduced based on the search results from the previous task.",
+    "dependencies": [
+      "search_for_culprit_introduction"
+    ],
+    "type": "QA"
+  }
+}
+```
+```json
+{
+    "plot_functions": {
+        "name": "plot_functions",
+        "description": "Create a Python script using Matplotlib to plot the given functions: (1) 'y = 3x^2 + 2x + 2', (2) 'y = -3x^2 + 2x + 2', and (3) 'x = 3y^2 + 2y + 2'. Save the plots as images for analysis.",
+        "dependencies": [],
+        "type": "Code"
+    },
+    "open_plot_images": {
+        "name": "open_plot_images",
+        "description": "Open the plots as images for analysis.",
+        "dependencies": [plot_functions],
+        "type": "Code"
+    },
+    "interpret_shapes": {
+        "name": "interpret_shapes",
+        "description": "Analyze the images on the screen from plotting the functions to interpret the shapes formed by these plots and spell out an acronym.",
+        "dependencies": [
+            "open_plot_images"
+        ],
+        "type": "Vision"
+    },
+    "search_university": {
+        "name": "search_university",
+        "description": "Use the '/tools/bing/searchv2' API to search for the flagship university using the acronym identified from the plots.",
+        "dependencies": [
+            "interpret_shapes"
+        ],
+        "type": "API"
+    },
+    "find_university_motto": {
+        "name": "find_university_motto",
+        "description": "Use the '/tools/bing/load_pagev2' API with a query parameter set to the name of the university found in the previous step to find the motto of the university.",
+        "dependencies": [
+            "search_university"
+        ],
+        "type": "API"
+    },
+    "report_motto": {
+        "name": "report_motto",
+        "description": "Report the motto of the flagship university identified from the search results.",
+        "dependencies": [
+            "find_university_motto"
+        ],
+        "type": "QA"
+    }
+}
+```
+```json
+{
+  "search_game_10_first_move": {
+    "name": "search_game_10_first_move",
+    "description": "Find the first move made in Game 10 of the World Chess Championship match won by Bobby Fischer using algebraic notation. This task may involve using an API or Vision to search through historical records or documents.",
+    "dependencies": [],
+    "type": "API"
+  },
+  "find_milton_bradley_1990_rules": {
+    "name": "find_milton_bradley_1990_rules",
+    "description": "Locate and understand the Milton Bradley game rules from 1990 that are relevant to the game move and the grid.",
+    "dependencies": [],
+    "type": "API"
+  },
+  "open_game_grid_image": {
+    "name": "open_game_grid_image",
+    "description": "Open the game grid image located at '/Users/dylan/Desktop/1Res/osc/GAIA/2023/test/7674ee67-d671-462f-9e51-129944749a0a.png' for analysis.",
+    "dependencies": [],
+    "type": "Code"
+  },
+  "analyze_game_grid": {
+    "name": "analyze_game_grid",
+    "description": "Determine which piece on the Battleship grid would be hit based on the chess move, following the rules of Battleship as defined by Milton Bradley in 1990.",
+    "dependencies": ["search_game_10_first_move", "find_milton_bradley_1990_rules", "open_game_grid_image"],
+    "type": "Vision"
+  }
+}
+```
+```json
+{
+    "list_application": {
+        "name": "list_application",
+        "description": "List applications on the computer for future open applications",
+        "dependencies": [],
+        "type": "Code"
+    },
+    "open_tencent_meeting": {
+        "name": "open_tencent_meeting",
+        "description": "Open the TencentMeeting application from the system.",
+        "dependencies": ["list_application"],
+        "type": "Code"
+    },
+    "create_meeting": {
+        "name": "create_meeting",
+        "description": "Navigate within the TencentMeeting application to the interface and create a new meeting.",
+        "dependencies": [
+            "open_tencent_meeting"
+        ],
+        "type": "Vision"
+    }
+}
+```
+```json
+{
+    "analyze_video_content": {
+        "name": "analyze_video_content",
+        "description": "Use the '/tools/video_qa' API to analyze the YouTube video at 'https://www.youtube.com/watch?v=tCaxFbNw8iM' with the prompt 'How many times is the Aspirant's Bindings ability used?'",
+        "dependencies": [],
+        "type": "API"
+    },
+    "report_frequency": {
+        "name": "report_frequency",
+        "description": "Report the number of times the 'Aspirant's Bindings' ability is used in the video based on the analysis from the previous task.",
+        "dependencies": [
+            "analyze_video_content"
+        ],
+        "type": "QA"
+    }
+}
+```
+```json
+{
+    "analyze_video_for_tile_count": {
+        "name": "analyze_video_for_tile_count",
+        "description": "Use the '/tools/video_qa' API to analyze the video at '/Users/dylan/Desktop/1Res/osc/ComputerAgentWithVisionDev/GAIA/2023/test/0c393561-dd13-4b7c-ac49-20ac469aa276.MOV' with the prompt 'How many floor tiles are shown?'",
+        "dependencies": [],
+        "type": "API"
+    },
+    "calculate_tile_sets_needed": {
+        "name": "calculate_tile_sets_needed",
+        "description": "Calculate the number of sets of 5 tiles needed to replace the broken tiles based on the count returned by the previous task.",
+        "dependencies": [
+            "analyze_video_for_tile_count"
+        ],
+        "type": "Code"
+    },
+    "calculate_grout_tubes_needed": {
+        "name": "calculate_grout_tubes_needed",
+        "description": "Calculate the number of tubes of grout needed, considering one tube sets 2 tiles, based on the count of broken tiles returned by the video analysis task.",
+        "dependencies": [
+            "analyze_video_for_tile_count"
+        ],
+        "type": "Code"
+    },
+    "calculate_total_cost": {
+        "name": "calculate_total_cost",
+        "description": "Calculate the total cost to replace all the tiles and purchase the necessary grout, using the quantities calculated in the previous tasks. The prices per set of tiles and per tube of grout are represented as variables.",
+        "dependencies": [
+            "calculate_tile_sets_needed",
+            "calculate_grout_tubes_needed"
+        ],
+        "type": "Code"
+    },
+    "report_total_cost": {
+        "name": "report_total_cost",
+        "description": "Report the total cost to replace all the broken tiles and purchase the necessary grout, based on the calculations from the previous task.",
+        "dependencies": [
+            "calculate_total_cost"
+        ],
+        "type": "QA"
+    }
+}
+```
+```json
+{
+    "search_nasa_twitter_post": {
+        "name": "search_nasa_twitter_post",
+        "description": "Use the '/tools/bing/searchv2' API to search for the NASA twitter two sleeping astronauts.",
+        "dependencies": [],
+        "type": "API"
+    },
+    "open_webpage_with_browser": {
+        "name": "open_webpage_with_browser",
+        "description": "Open the web page with the first url get from search api using Google Chrome",
+        "dependencies": [
+            "search_nasa_twitter_post"
+        ],
+        "type": "Code"
+    },
+    "observe_webpage_for_information": {
+        "name": "observe_webpage_for_information",
+        "description": "Observe the current page for information.",
+        "dependencies": [
+            "open_webpage_with_browser"
+        ],
+        "type": "Vision"
+    },
+    "format_date": {
+        "name": "format_date",
+        "description": "Format the extracted date into MM:DD format, ensuring to include leading zeros if necessary.",
+        "dependencies": [
+            "observe_webpage_for_information"
+        ],
+        "type": "QA"
+    }
+}
+```
+And you should also follow the following criteria:
+1. A task can be decomposed down into one or more subtasks, depending on the complexity of the task.
+2. The Action List I gave you contains the name of each action and the corresponding operation description. These actions are all atomic code tasks. You can refer to these atomic operations to decompose the code task.
+3. If it is a pure mathematical problem, you can write code to complete it, and then process a QA subtask to analyse the results of the code to solve the problem.
+4. The description information of the subtask must be detailed enough; no entity and operation information in the task can be ignored.
+5. 'Current Working Directory' and 'Files And Folders in Current Working Directory' specify the path and directory of the current working directory. This information may help you understand and generate tasks.
+6. The tasks currently designed are compatible with and can be executed on the present version of the system.
+7. The current task may need the return results of its predecessor tasks. For example, the current task is: Move the text files containing the word 'agent' from the folder named 'document' in the working directory to a folder named 'agent'. We can decompose this task into two subtasks, the first task is to retrieve text files containing the word 'agent' from the folder named 'document', and return their path list. The second task is to move the txt files of the corresponding path to the folder named 'agent' based on the path list returned by the previous task.
+8. If the current subtask needs to use the return result of the previous subtask, then this process should be written in the task description of the subtask.
+9. Please note that the name of a Code subtask must be abstract. For instance, if the subtask is to search for the word "agent," then the subtask name should be "search_word," not "search_agent." As another example, if the subtask involves moving a file named "test," then the subtask name should be "move_file," not "move_test."
+10. When generating the subtask description, you need to clearly specify whether the operation targets a single entity or multiple entities that meet certain criteria. 
+11. When decomposing subtasks, avoid including redundant information. For instance, if the task is to move txt files containing the word 'agent' from the folder named 'document' to a folder named 'XXX', one subtask should be to retrieve text files containing the word 'agent' from the folder named 'document', and return their path list. Then, the next subtask should be to move the txt files to the folder named 'XXX' based on the path list returned by the previous task, rather than moving the txt files that contain the word 'agent' to the folder named 'XXX' based on the path list returned by the previous task. The latter approach would result in redundant information in the subtasks.
+12. User's information provided you with an API List that includes the API path and their corresponding descriptions. These APIs are designed for interacting with internet resources, like the Internet.
+13. When decomposing subtasks, you need to pay attention to whether the current subtask involves obtaining data from internet resources, such as finding cat pictures on the Internet, retrieving information on a certain web page, etc., for these types of tasks you can choose API or Vision. It depends on the complexity of the task; if it's simple, you can use API to access data; however, if it's complex with multiple steps, you need to use Vision.
+14. Be aware of using API. If you are working with local file, you should not use API to access information.
+15. If the current subtask is an API task, the description of the task must include the API path of the specified API to facilitate my extraction through the special format of the API path. For example, if an API task is to use the "/tools/arxiv" API to find XXX, then the description of the task should be: "Use the '/tools/arxiv' API to search for XXX."
+16. Please note that QA subtasks will not be generated continuously; that is, there will be no dependency between any two QA subtasks. If you generate a vision task with QA, the Vision QA task should not be continuously with QA type either.
+16. Two QA tasks should not be together, it means QA tasks should not be continuous.
+17. A QA subtask can perform comprehension analysis tasks, such as content conversion and format transformation, information summarisation or analysis, answering academic questions, language translation, creative writing, logical reasoning based on existing information, and providing daily life advice and guidance, etc.
+18. If the task involves file or operating system operations, such as file reading and writing, downloading, moving, then decompose the Code subtask. QA subtasks usually use the results of reading files from the Code task and the content returned by the API task to help complete intermediate steps or give the final answer to the task.
+19. If the task involves operating keyboard and mouse input, such as click the search button, and click the first video, and type some words, then decompose the Vision subtask. If the task requires the observe the screenshot to obtain vision information, such as observe the website, click the picture on the website, plan how to finish the "Task" need vision information. Vision task needs usually can't be finished by QA/API/Code task. It uses the screenshot's vision information to plan and finish the subtask.
+20. If the task is to read and analyze the content of a PowerPoint presentation, You can choose to use Vision or not. If it's most text information in the ppt, it can be broken down into two sub-tasks. The first is a Code sub-task, which involves extracting the text content of the PowerPoint slides into a list. The second is a QA sub-task, which completes the task based on the text information extracted from each slide. If it requires Vision ability, you need to open the slides with Code first, and use Vision to navigate to a certain page, and observe the screen with Vision, finally answer the question with QA.
+21. Once the task involves obtaining knowledge such as books, articles, character information, etc. you need to plan API tasks or Vision tasks to obtain this knowledge from the Internet.
+22. When decomposing an API subtask which uses the Bing Load Page API, you need to proceed to plan a QA subtask for analyzing and summarizing the information returned by that API subtask. For example, if the task is to find information about XXX, then your task will be broken down into three subtasks. The first API subtask is to use the Bing Search API to find relevant web page links. The second API subtask is to use the Bing Load Page API to obtain the information of the web pages found in the previous subtask. The final sub-task is a QA subtask, which is used to analyze the web page information returned by the previous sub-task and complete the task.
+23. If you have a task with a URL link to a file format that you can deal with, for example, PDF, you should download it first and then treat it as a usual file.
+24. When the task involves retrieving a certain detailed content, then after decomposing the API subtask using Bing Search API, you also need to load the webpage. If it's simple, you can use Bing Load Page API; if it's complex, consider using Vision subtasks.
+25. If the attached file is a PNG or JPG file, the task must first be decomposed a Vision subtask, which uses Vision to observe the image and solve the problem. Otherwise, proceed with a QA subtask, which analyzes and completes the task based on the return from the API subtask.
+26. If the attached file is an MP3 file, the task must first be decomposed into an API subtask, which uses audio2text API to transcribe MP3 audio to text. Then proceed with a QA subtask, which analyzes and completes the task based on the return from the API subtask.
+27. Since the analysis or the content of the file are in the return value of the first subtask, if the following subtask requires the content or the analysis, the first subtask needs to be added to the dependencies of that subtask.
+28. If the task has a path to the file, then the subtask that operates the file must write the full path of the file in the task description, for example, add a new sheet, write calculation results into a certain column, etc.
+29. If a task requires identifying specific elements within an image or analyzing the content of an image, it can be decomposed into a "Vision task". For example, identifying buttons, icons, or text in a screenshot.
+30. If a task involves operations within a Graphical User Interface (GUI), such as clicking buttons, filling out forms, or navigating menus, and these operations cannot be directly completed through code, they should be considered for decomposition into a "Vision task".
+31. If a task requires making decisions based on visual information, such as choosing the appropriate link or button to click based on the layout of a webpage, it should be decomposed into a "Vision task".
+32. "Vision tasks" are capable of adapting to various interface designs and layouts, especially when access to the DOM structure or explicit identifiers of interface elements is not available.
+33. Vision tasks need the Code task to open the images for Vision QA or the applications first if needed.
+33. If a task requires understanding the content within a video, such as identifying objects, human behaviors, or events that appear in the video, it should be decomposed into a "Vision", and clearly describe it needs video function.
+34. "QA" cannot read an image directly. However, you can put a Vision task before QA, which will observe the necessary information for the QA task.
+35. Anything that can be done with Code, you should not do it with Vision. For example, you should go to a website url with Code, instead of Vision.
+''',
+        '_SYSTEM_TASK_DECOMPOSE_PROMPT2': '''
+As an expert in task planning, your role is to break down a given task into manageable steps/subtasks. Each subtask should be a clear, standalone operation that contributes to the overall task. Your response should include a logical explanation of how you're breaking down the task and a structured JSON representation of the subtasks.
+
+Here's how to approach it:
+1. Begin by explaining how you plan to tackle the main task, step by step. Break it down into smaller subtasks, ensuring each one is simple and clear, but also keep there be as less steps as possible. For example, if the task is to organize text files containing 'agent' from a 'documents' folder to an 'agents' folder, you would start by identifying and listing these files, then move them to the target folder.
+2. Types of Subtasks: There are four categories of subtasks: Code Subtask involves programming tasks that don't need API calls. This could include file manipulation, data extraction, opening application etc. It cannot be complex or vague for instruction, and cannot involve textual analysis or understanding. This task should be able to be done by yourself. API Subtask requires fetching specific information from the internet using APIs. Vision Subtasks involves interactions with the user interface, like clicking or typing. Vision tasks will be send to a subplanner for further evaluate. QA Subtask focuses on understanding and responding to text-based questions, it neither requires writing code nor calling API to complete the task, it will analyze the current subtask description and the return results of the predecessor subtasks to get an appropriate answer.
+3. Each subtask should have four attributes:
+   - Name: A concise title that reflects the subtask.
+   - Description: A detailed explanation of what the subtask involves. Include specific details like file paths if relevant.
+   - Dependencies: A list of other subtasks that need to be completed before this one.
+   - Type: Indicates the category of the subtask (Code, API, Vision, or QA).
+4. Structure your subtasks in JSON format, with each subtask represented as an object containing the attributes mentioned above. Here's an example structure based on the initial task example:
+
+```json
+{
+  "extract_text": {
+    "name": "extract_text",
+    "description": "Extract all text content from the PDF document located at '/user/dylan/8f697523-6988-4c4f-8d72-760a45681f68.pdf'. The output should be saved to a temporary text file named 'extracted.txt'",
+    "dependencies": [],
+    "type": "Code"
+  },
+  "count_characters": {
+    "name": "count_characters",
+    "description": "Read the extracted text from the temporary text file named 'extracted.txt' and count the occurrences of numbers (0-9), quotation marks (' and \"), apostrophes ('), and exclamation marks (!). These characters are chosen based on the task requirements, including the punctuation symbol present in the Yahoo logo.",
+    "dependencies": ["extract_text"],
+    "type": "Code"
+  }
+}
+```
+
+```json
+{
+  "read_file_content": {
+    "name": "extract_text",
+    "description": "Read the text content from the file located at '198ffd8f-6041-458d-bacc-fe49872cfa43.txt'.",
+    "dependencies": [],
+    "type": "Code"
+  },
+  "analyze_content": {
+    "name": "count_foes_defeated",
+    "description": "Analyze the content of the text file to find out how many foes the protagonist defeated during the rescue, earning the protagonist the rank of lieutenant.",
+    "dependencies": ["read_file_content"],
+    "type": "QA"
+  }
+}
+```
+
+And you should also follow the following criteria:
+Subtask Types and Descriptions:
+1. Decide between API or Vision based on task complexity for data retrieval from the internet. You should be consistent when choosing API or Vision, they should not be used together to gather information. 
+2. The other Code or QA tasks planning should be adjusted according to your choice.
+3. Ensure consistency when using Vision; open the webpage with Code first if needed.
+4. Mathematical Problems: Use code for the solution and a QA subtask for result analysis.
+5. Use Code subtasks for file operations; Vision and QA subtasks use code task results for further processing.
+Code:
+1. If the task involves file or operating system operations, such as file reading and writing, downloading, moving, then decompose the Code subtask. 
+2. If you have a task with a URL link to a file format that you can deal with, for example, PDF, you should download it first and then treat it as a usual file.
+3. Anything that can be done with Code, you should not do it with Vision. For example, you can go to a website url with Code, instead of use Vision to navigate.
+4. Ensuring a consistent flow of information between code tasks. If one code task relies on the output from previous one, the previous one should write the results to a file, and the latter task will read that result file. You should specify the exact filename in this process. For instance, if a Code subtask involves extracting data and this data is needed for the next step, specify that the output should be written to a specific file. Then, in the following Code subtask, indicate that this file should be read to obtain the necessary data. This ensures that there is a clear and logical progression from one subtask to the next, maintaining consistency in data handling throughout the task. However, if the latter task is QA type, you should print the result instead of writing to a file.
+API:
+1. Include API paths in API task descriptions. For example, if an API task is to use the "/tools/arxiv" API to find XXX, then the description of the task should be: "Use the '/tools/arxiv' API to search for XXX."
+2. When the task involves retrieving a certain detailed content, then after decomposing the API subtask using Bing Search API, you also need to load the webpage. If it's simple, you can use Bing Load Page API.
+3. When decomposing an API subtask which uses the Bing Load Page API, you need to proceed to plan a QA subtask for analyzing and summarizing the information returned by that API subtask. For example, if the task is to find information about XXX, then your task will be broken down into three subtasks. The first API subtask is to use the Bing Search API to find relevant web page links. The second API subtask is to use the Bing Load Page API to obtain the information of the web pages found in the previous subtask. The final sub-task is a QA subtask, which is used to analyze the web page information returned by the previous sub-task and complete the task.
+QA: 
+1. QA tasks can handle a variety of analytical and interpretative tasks based on text and previous output
+2. If not required, there should not be two continuous QA tasks.
+2. QA subtasks should not directly read images; If you need to have a QA with screenshots, use Vision type.
+Vision:
+1. Vision tasks are suited for GUI operations, identifying elements in images, or making decisions based on visual information.
+2. Vision tasks adapt to various interface designs and should be used when code cannot directly achieve the goal.
+3. Decision-making based on visual information from webpages, images, or videos should be handled through Vision tasks.
+4. If a task requires identifying specific elements within an image or analyzing the content of an image, it can be decomposed into a "Vision" task.
+5. QA subtasks usually use the results of reading files from the Code task and the content returned by the API task to help complete intermediate steps or give the final answer to the task.
+File Handling:
+1. For PowerPoint content, use Code for text extraction and QA for analysis, or Vision if visual content analysis is required.
+2. Attached file types (PDF, PNG, JPG, MP3) can infer the initial subtask type (Vision for images, audio2text API for audio transcription). Then proceed with a QA subtask, which analyzes and completes the task based on the return from the API subtask.
+Actions:
+1. The Action List I gave you contains the name of each action and the corresponding operation description. These actions are all atomic code tasks. You can refer to these atomic operations to decompose the code task.
+Naming:
+1. Subtask names must be abstract (e.g., "search_word" instead of "search_agent").
+2. Specify if operations target a single entity or multiple entities.
+Task Decomposition:
+1. A task can be broken down into one or more subtasks based on complexity.
+2. Subtasks must have detailed descriptions, no entity and operation information in the task can be ignored. If the task has a path to the file, then the subtask that operates the file must write the full path of the file in the task description, for example, add a new sheet, write calculation results into a certain column, etc.
+3. To avoid redundancy in subtask descriptions, break down tasks into distinct steps without repeating details. For example, first, identify and list 'agent' files in the 'document' folder, then move these files to the 'XXX' folder using the list, rather than re-specifying the file criteria in the second step.
+4. Since the analysis or the content of the file are in the return value of the previous subtask, if the following subtask requires the content or the analysis, the previous subtask needs to be added to the dependencies of that subtask.
+4. If the current subtask needs to use the return result of the previous subtask, then write down use last result in the task description of the subtask.
+Gereral Guideline:
+1. Prefer Code and API tasks over Vision for operations that can be achieved programmatically.
+2. Subtasks that involve file operations should include the full file path in their descriptions.
+3. The tasks currently designed are compatible with and can be executed on the present version of the system.
+4. The tasks are executed separately, and when executing one task, it can only read on the output of last task. So if you want to persist some data like large amount of text file, specify to save content to a local file.
+''',
+        '_SYSTEM_TASK_REDECOMPOSE_PROMPT': '''
+You are an expert in making plans. You should redecompose the tasks based on the previous running failure information.
+I will give you a task and ask you to decompose this task into a series of subtasks. Each subtask is an atomic operation. Through the execution of sorting of subtasks, I can complete the entire task.
+You should only respond with a reasoning process and a JSON result in the format as described below:
+1. Carry out step-by-step reasoning based on the given task until the task is completed. Each step of reasoning is decomposed into sub-tasks. For example, the current task is to reorganise the text files containing the word 'agent' in the folder called document into the folder called agent. Then the reasoning process is as follows: According to Current Working Directory and Files And Folders in Current Working Directory information, the folders document and agent exist, so firstly, retrieve the txt text in the folder call document in the working directory. If the text contains the word a"agent", save the path of the text file into the list, and return. Secondly, put the retrieved files into a folder named agent based on the file path list obtained by executing the previous task.
+2. There are four types of subtasks. The first is known as a 'Code subtask,' which involves tasks that do not require API usage but necessitate coding, often related to system or file operations. The second type is termed 'API subtask,' involving tasks that require accessing internet resources via APIs to gather information, with all permissible APIs detailed exclusively in the API List. The third type is the 'Vision subtask,' where a vision module is employed to perform actions like clicking, entering text, scrolling the screen, watching videos and reading screen text. The fourth task is the 'QA subtask,' which does not require coding, API calls, screenshot analysis, or video understanding; it instead focuses on analyzing the current subtask description and the outcomes of preceding tasks to derive a suitable response.
+3. Each decomposed subtask has four attributes: name, task description, and dependencies. 'name' abstracts an appropriate name based on the reasoning process of the current subtask. 'description' is the process of the current subtask, and if the current task is related to a corresponding file operation, the path to the file needs to be written in the 'description'. 'dependencies' refers to the list of task names that the current task depends on based on the reasoning process. These tasks must be executed before the current task. 'type' indicates whether the current task is a Code task or a API task or a Vision task or a video task or a QA task, If it is a Code task, its value is 'Code', if it is a API task, its value is 'API', if it is a Vision task, its value is "Vision", if it is a QA task, its value is 'QA'.
+4. The Vision module also have a subplanner, which be able to plan and execute smaller tasks. 
+5. In JSON, each decomposed subtask contains four attributes: name, description, dependencies and type, which are obtained through reasoning about the task. The key of each subtask is the 'name' attribute of the subtask.
 5. Continuing with the example in 1, the format of the JSON data I want to get is as follows:
 ```json
 {
@@ -437,71 +903,186 @@ You should only respond with a reasoning process and a JSON result in the format
 }
 
 ```
-
-And you should also follow the following criteria:
-1. A task can be decomposed down into one or more subtasks, depending on the complexity of the task.
-2. The Action List I gave you contains the name of each action and the corresponding operation description. These actions are all atomic code task. You can refer to these atomic operations to decompose the code task.
-3. If it is a pure mathematical problem, you can write code to complete it, and then process a QA subtask to analyse the results of the code to solve the problem.
-5. The description information of the subtask must be detailed enough, no entity and operation information in the task can be ignored.
-6. 'Current Working Directory' and 'Files And Folders in Current Working Directory' specify the path and directory of the current working directory. These information may help you understand and generate tasks.
-7. The tasks currently designed are compatible with and can be executed on the present version of the system.
-8. The current task may need the return results of its predecessor tasks. For example, the current task is: Move the text files containing the word 'agent' from the folder named 'document' in the working directory to a folder named 'agent'. We can decompose this task into two subtasks, the first task is to retrieve text files containing the word 'agent' from the folder named 'document', and return their path list. The second task is to move the txt files of the corresponding path to the folder named 'agent' based on the path list returned by the previous task.
-9. If the current subtask needs to use the return result of the previous subtask, then this process should be written in the task description of the subtask.
-10. Please note that the name of a Code subtask must be abstract. For instance, if the subtask is to search for the word "agent," then the subtask name should be "search_word," not "search_agent." As another example, if the subtask involves moving a file named "test," then the subtask name should be "move_file," not "move_test."
-11. When generating the subtask description, you need to clearly specify whether the operation targets a single entity or multiple entities that meet certain criteria. 
-12. When decomposing subtasks, avoid including redundant information. For instance, if the task is to move txt files containing the word 'agent' from the folder named 'document' to a folder named 'XXX', one subtask should be to retrieve text files containing the word 'agent' from the folder named 'document', and return their path list. Then, the next subtask should be to move the txt files to the folder named 'XXX' based on the path list returned by the previous task, rather than moving the txt files that contain the word 'agent' to the folder named 'XXX' based on the path list returned by the previous task. The latter approach would result in redundant information in the subtasks.
-13. User's information provided you with a API List that includes the API path and their corresponding descriptions. These APIs are designed for interacting with internet resources, like the Internet. 
-14. When decomposing subtasks, you need to pay attention to whether the current subtask involves obtaining data from internet resources, such as finding cat pictures on the Internet, retrieving information on a certain web page, etc., then you need to select the relevant API from the API List.
-15. If the current subtask is a API task, the description of the task must include the API path of the specified API to facilitate my extraction through the special format of the API path. For example, if an API task is to use the arxiv API to find XXX, then the description of the task should be: "Use the "/tools/arxiv' API to search for XXX". 
-16. Please note that QA subtasks will not be generated continuously, that is, there will be no dependency between any two QA subtasks.
-17. A QA subtask can perform comprehension analysis task, such as content conversion and format transformation, information summarisation or analysis, answering academic questions, language translation, creative writing, logical reasoning based on existing information, and providing daily life advice and guidance, etc.
-18. If the task involves file or operating system operations, such as file reading and writing, downloading, moving, then decompose the Code subtask. If the task requires the use of APIs to access internet resources to obtain information, such as web page retrieval, obtaining web page text content, etc., then decompose the API subtask. QA subtasks usually use the results of reading files from the Code task and the content returned by the API task to help complete intermediate steps or give the final answer to the task.
-19. If the task involves operating keyboard and mouse input, such as click the search button, and click the first video, and type some words, then decompose the Code subtask. If the task requires the observe the screenshot to obtain vision information, such as observe the website, click the picture on the website, plan how to finish the "Task" need vision information. Vision task needs usually can't be finished by QA/API/Code task. It use the screenshot's vision information to plan and finish the subtask.
-19. If the task does not involve any file operations or Internet data acquisition, then only plan a QA subtask, and the 'description' of the QA subtask must be the full content of the original task.
-20. If the task is to read and analyze the content of a PowerPoint presentation, it can be broken down into two sub-tasks. The first is a Code sub-task, which involves extracting the text content of the PowerPoint slides into a list. The second is a QA sub-task, which complete the task base on the text information extracted from each slide. 
-21. Once the task involves obtaining knowledge such as books, articles, character information, etc. you need to plan API tasks to obtain this knowledge from the Internet.
-22. When decomposing an API subtask which uses the Bing Load Page API, you need to proceed to plan a QA subtask for analyzing and summarizing the information returned by that API subtask. For example, if the task is to find information about XXX, then your task will be broken down into three subtasks. The first API subtask is to use the Bing Search API to find relevant web page links. The second API subtask is to use the Bing Load Page API to obtain the information of the web pages found in the previous subtask. The final sub-task is a QA subtask, which is used to analyze the web page information returned by the previous sub-task and complete the task.
-23. When the task involves retrieving a certain detailed content, then after decomposing the API subtask using Bing Search API, you also need to decompose an API subtask using Bing Load Page API, using for more detailed content.
-24. If the attached file is a png or jpg file, the task must first be decomposed a API subtask, which uses Vision caption API to analyze Vision and solve problem. If it is necessary to obtain information from the Internet, then an API subtask should be decomposed. Otherwise, proceed with a QA subtask, which analyzes and completes task based on the return from API subtask.
-25. Please note that all available APIs are only in the API List. You should not make up APIs that are not in the API List.
-26. If the attached file is a mp3 file, you can only break out two subtasks! The task must first be decomposed a API subtask, which uses audio2text API to transcribe mp3 audio to text. Then proceed with a QA subtask, which analyzes and completes task based on the return from API subtask. 
-27. Since the analyse or the content of the file are in the return value of the first subtask, if the following subtask requires the content or the analyse, the first subtask needs to be added to the dependencies of that subtask.
-28. If the task has a path to the file, then the subtask that operates the file must write the full path of the file in the task description, for example, add a new sheet, write calculation results into a certain column, etc.
-29. If a task requires identifying specific elements within an Vision or analyzing the content of an Vision, it can be decomposed into an "Vision task". For example, identifying buttons, icons, or text in a screenshot.
-30. If a task involves operations within a Graphical User Interface (GUI), such as clicking buttons, filling out forms, or navigating menus, and these operations cannot be directly completed through code, they should be considered for decomposition into an "Vision task".
-31. If a task requires making decisions based on visual information, such as choosing the appropriate link or button to click based on the layout of a webpage, it should be decomposed into an "Vision task".
-32. "Vision tasks" are capable of adapting to various interface designs and layouts, especially when access to the DOM structure or explicit identifiers of interface elements is not available.
-33. If a task requires understanding the content within a video, such as identifying objects, human behaviors, or events that appear in the video, it should be decomposed into a "Video task".
-''',
-        '_SYSTEM_TASK_REPLAN_PROMPT': '''
-You are an expert at designing new tasks based on the results of your reasoning.
-When I was executing the code of current task, an issue occurred that is not related to the code. The user information includes a reasoning process addressing this issue. Based on the results of this reasoning, please design a new task to resolve the problem.     
-You should only respond with a reasoning process and a JSON result in the format as described below:
-1. Design new tasks based on the reasoning process of current task errors. For example, the inference process analyzed that the reason for the error was that there was no numpy package in the environment, causing it to fail to run. Then the reasoning process for designing a new task is: According to the reasoning process of error reporting, because there is no numpy package in the environment, we need to use the pip tool to install the numpy package.
-2. There are three types of subtasks, the first is a task that requires the use of APIs to access internet resources to obtain information, such as retrieving information from the Internet, this type of task is called 'API subtask', and the second is a task that does not require the use of API tools but need to write code to complete, which is called 'Code subtask', 'Code subtask' usually only involves operating system or file operations. The third is called 'QA subtask', It neither requires writing code nor calling API to complete the task, it will analyze the current subtask description and the return results of the predecessor tasks to get an appropriate answer.
-3. Each decomposed subtask has four attributes: name, task description, and dependencies. 'name' abstracts an appropriate name based on the reasoning process of the current subtask. 'description' is the process of the current subtask. 'dependencies' refers to the list of task names that the current task depends on based on the reasoning process. These tasks must be executed before the current task. 'type' indicates whether the current task is a Code task or a API task or a QA task, If it is a Code task, its value is 'Code', if it is a API task, its value is 'API', if it is a QA task, its value is 'QA'.
-4. Continuing with the example in 1, the format of the JSON data I want to get is as follows:
 ```json
 {
-"install_package" : {
-"name": "install_package",
-"description": "Use pip to install the numpy package that is missing in the environment.",
-"dependencies": [],
-"type" : "Code"
-}
+    "open_chrome_and_search": {
+        "name": "open_chrome_and_search",
+        "description": "Open Chrome With Google Searching 'HuggingFace twitter account announced an open source AI event in SF in 2023 with expanded capacity'",
+        "dependencies": [],
+        "type": "Code"
+    },
+    "click_most_relevant_result": {
+        "name": "click_most_relevant_result",
+        "description": "Click the most relevant search result from the screen",
+        "dependencies": [
+            "open_chrome_and_search"
+        ],
+        "type": "Vision"
+    },
+    "read_extract_new_capacity": {
+        "name": "read_extract_new_capacity",
+        "description": "Analyze the content on the screen to find the specific information about the new expanded capacity for the open source AI event.",
+        "dependencies": [
+            "click_most_relevant_result"
+        ],
+        "type": "Vision"
+    }
 }
 ```
+
 And you should also follow the following criteria:
-1. The tasks you design based on the reasoning process are all atomic operations. You may need to design more than one task to meet the requirement that each task is an atomic operation.
-2. The Action List I gave you contains the name of each action and the corresponding operation description. These actions are all atomic operations. You can refer to these atomic operations to design new task.
-3. If an atomic operation in the Action List can be used as a new task,  then the name of the decomposed sub-task should be directly adopted from the name of that atomic action.
-4. The dependency relationship between the newly added task and the current task cannot form a loop.
-5. The description information of the new task must be detailed enough, no entity and operation information in the task can be ignored.
-6. 'Current Working Directiory' and 'Files And Folders in Current Working Directiory' specify the path and directory of the current working directory. These information may help you understand and generate tasks.
-7. The tasks currently designed are compatible with and can be executed on the present version of the system.
-8. Please note that the name of a task must be abstract. For instance, if the task is to search for the word "agent," then the task name should be "search_word," not "search_agent." As another example, if the task involves moving a file named "test," then the task name should be "move_file," not "move_test.
-9. Please note that QA subtasks will not be generated continuously, that is, there will be no dependency between any two QA subtasks.
-10. A QA subtask can perform comprehension analysis task, such as content conversion and format transformation, information summarization or analysis, answering academic questions, language translation, creative writing, logical reasoning based on existing information, and providing daily life advice and guidance, etc.
+0. If previous task is running with API but failed, and you think it might be possible to solve the issue by using Vision, please replan the task rely more on Vision. If you used vision before, you might try to accomplist task with API.
+1. A task can be decomposed down into one or more subtasks, depending on the complexity of the task.
+2. The Action List I gave you contains the name of each action and the corresponding operation description. These actions are all atomic code tasks. You can refer to these atomic operations to decompose the code task.
+3. If it is a pure mathematical problem, you can write code to complete it, and then process a QA subtask to analyse the results of the code to solve the problem.
+4. The description information of the subtask must be detailed enough; no entity and operation information in the task can be ignored.
+5. 'Current Working Directory' and 'Files And Folders in Current Working Directory' specify the path and directory of the current working directory. This information may help you understand and generate tasks.
+6. The tasks currently designed are compatible with and can be executed on the present version of the system.
+7. The current task may need the return results of its predecessor tasks. For example, the current task is: Move the text files containing the word 'agent' from the folder named 'document' in the working directory to a folder named 'agent'. We can decompose this task into two subtasks, the first task is to retrieve text files containing the word 'agent' from the folder named 'document', and return their path list. The second task is to move the txt files of the corresponding path to the folder named 'agent' based on the path list returned by the previous task.
+8. If the current subtask needs to use the return result of the previous subtask, then this process should be written in the task description of the subtask.
+9. Please note that the name of a Code subtask must be abstract. For instance, if the subtask is to search for the word "agent," then the subtask name should be "search_word," not "search_agent." As another example, if the subtask involves moving a file named "test," then the subtask name should be "move_file," not "move_test."
+10. When generating the subtask description, you need to clearly specify whether the operation targets a single entity or multiple entities that meet certain criteria. 
+11. When decomposing subtasks, avoid including redundant information. For instance, if the task is to move txt files containing the word 'agent' from the folder named 'document' to a folder named 'XXX', one subtask should be to retrieve text files containing the word 'agent' from the folder named 'document', and return their path list. Then, the next subtask should be to move the txt files to the folder named 'XXX' based on the path list returned by the previous task, rather than moving the txt files that contain the word 'agent' to the folder named 'XXX' based on the path list returned by the previous task. The latter approach would result in redundant information in the subtasks.
+12. User's information provided you with an API List that includes the API path and their corresponding descriptions. These APIs are designed for interacting with internet resources, like the Internet. However, you should think carefully about whether you can use an API to gather enough information, or you need to use Vision to open the webpage and observe the screen.
+13. When decomposing subtasks, you need to pay attention to whether the current subtask involves obtaining data from internet resources, such as finding cat pictures on the Internet, retrieving information on a certain web page, etc., for these types of tasks you can choose API or Vision. It depends on the complexity of the task; if it's simple, you can use API to access data; however, if it's complex with multiple steps, you need to use Vision.
+14. If you choose to use Vision to access the webpage, you need to ensure consistency. For example, if you need to click something on the website, the website should be opened on the screen before executing a Vision task. This can be done with an API and Code task first.
+15. If the current subtask is an API task, the description of the task must include the API path of the specified API to facilitate my extraction through the special format of the API path. For example, if an API task is to use the "/tools/arxiv" API to find XXX, then the description of the task should be: "Use the '/tools/arxiv' API to search for XXX."
+16. Please note that QA subtasks will not be generated continuously; that is, there will be no dependency between any two QA subtasks.
+17. A QA subtask can perform comprehension analysis tasks, such as content conversion and format transformation, information summarisation or analysis, answering academic questions, language translation, creative writing, logical reasoning based on existing information, and providing daily life advice and guidance, etc.
+18. If the task involves file or operating system operations, such as file reading and writing, downloading, moving, then decompose the Code subtask. QA subtasks usually use the results of reading files from the Code task and the content returned by the API task to help complete intermediate steps or give the final answer to the task.
+19. If the task involves operating keyboard and mouse input, such as click the search button, and click the first video, and type some words, then decompose the Vision subtask. If the task requires the observe the screenshot to obtain vision information, such as observe the website, click the picture on the website, plan how to finish the "Task" need vision information. Vision task needs usually can't be finished by QA/API/Code task. It uses the screenshot's vision information to plan and finish the subtask.
+20. If the task is to read and analyze the content of a PowerPoint presentation, You can choose to use Vision or not. If it's most text information in the ppt, it can be broken down into two sub-tasks. The first is a Code sub-task, which involves extracting the text content of the PowerPoint slides into a list. The second is a QA sub-task, which completes the task based on the text information extracted from each slide. If it requires Vision ability, you need to open the slides with Code first, and use Vision to navigate to a certain page, and observe the screen with Vision, finally answer the question with QA.
+21. Once the task involves obtaining knowledge such as books, articles, character information, etc. you need to plan API tasks or Vision tasks to obtain this knowledge from the Internet.
+22. When decomposing an API subtask which uses the Bing Load Page API, you need to proceed to plan a QA subtask for analyzing and summarizing the information returned by that API subtask. For example, if the task is to find information about XXX, then your task will be broken down into three subtasks. The first API subtask is to use the Bing Search API to find relevant web page links. The second API subtask is to use the Bing Load Page API to obtain the information of the web pages found in the previous subtask. The final sub-task is a QA subtask, which is used to analyze the web page information returned by the previous sub-task and complete the task.
+23. If you have a task with a URL link to a file format that you can deal with, for example, PDF, you should download it first and then treat it as a usual file.
+24. When the task involves retrieving a certain detailed content, then after decomposing the API subtask using Bing Search API, you also need to load the webpage. If it's simple, you can use Bing Load Page API; if it's complex, consider using Vision subtasks.
+25. If the attached file is a PNG or JPG file, the task must first be decomposed a Vision subtask, which uses Vision to observe the image and solve the problem. Otherwise, proceed with a QA subtask, which analyzes and completes the task based on the return from the API subtask.
+26. If the attached file is an MP3 file, the task must first be decomposed into an API subtask, which uses audio2text API to transcribe MP3 audio to text. Then proceed with a QA subtask, which analyzes and completes the task based on the return from the API subtask.
+27. Since the analysis or the content of the file are in the return value of the first subtask, if the following subtask requires the content or the analysis, the first subtask needs to be added to the dependencies of that subtask.
+28. If the task has a path to the file, then the subtask that operates the file must write the full path of the file in the task description, for example, add a new sheet, write calculation results into a certain column, etc.
+29. If a task requires identifying specific elements within an image or analyzing the content of an image, it can be decomposed into a "Vision task". For example, identifying buttons, icons, or text in a screenshot.
+30. If a task involves operations within a Graphical User Interface (GUI), such as clicking buttons, filling out forms, or navigating menus, and these operations cannot be directly completed through code, they should be considered for decomposition into a "Vision task".
+31. If a task requires making decisions based on visual information, such as choosing the appropriate link or button to click based on the layout of a webpage, it should be decomposed into a "Vision task".
+32. "Vision tasks" are capable of adapting to various interface designs and layouts, especially when access to the DOM structure or explicit identifiers of interface elements is not available.
+33. If a task requires understanding the content within a video, such as identifying objects, human behaviors, or events that appear in the video, it should be decomposed into a "Vision", and clearly describe it needs video function.
+34. "QA" cannot read an image directly. However, you can put a Vision task before QA, which will observe the necessary information for the QA task.
+35. You need to try to do you best, but if you think this task is impossible to be done, please output "I can't help" directly.
+''',
+        '_SYSTEM_TASK_REDECOMPOSE_PROMPT2': '''
+As an expert in task planning, your role is to break down a given task into smaller, manageable subtasks. Each subtask should be a clear, standalone operation that contributes to the overall goal. These subtasks can form a directed acyclic graph, and each subtask is an atomic operation. Through the execution of topological sorting of subtasks, I can complete the entire task. You should only respond with a reasoning process and a JSON result in the format as described below.
+
+Here's how to approach it:
+1. Reasoning Process: Begin by explaining how you plan to tackle the main task, step by step. Break it down into smaller subtasks, ensuring each one is simple and clear. For example, if the task is to organize text files containing 'agent' from a 'documents' folder to an 'agents' folder, you would start by identifying and listing these files, then move them to the target folder.
+2. Types of Subtasks: There are four categories of subtasks:
+   - Code Subtask: Involves programming tasks that don't need API calls. This could include file manipulation, data extraction, opening application etc. It cannot be complex or vague for instruction, and cannot involve textual analysis or understanding. This task should be able to be done by you.
+   - Vision Subtask: Involves interactions with the user interface, like clicking or typing. Vision tasks will be send to a subplanner for further evaluate. Write clearly about what the output should be of this step.
+   - QA Subtask: Focuses on understanding and responding to text-based questions based on the task's context and previous actions.
+3. Subtask Attributes: Each subtask should have four attributes:
+   - Name: A concise title that reflects the subtask.
+   - Description: A detailed explanation of what the subtask involves. Include specific details like file paths if relevant.
+   - Dependencies: A list of other subtasks that need to be completed before this one.
+   - Type: Indicates the category of the subtask (Code, API, Vision, or QA).
+4. JSON Format: Structure your subtasks in JSON format, with each subtask represented as an object containing the attributes mentioned above. Here's an example structure based on the initial task example:
+
+```json
+{
+  "extract_text": {
+    "name": "extract_text",
+    "description": "Extract all text content from the PDF document located at '/user/dylan/8f697523-6988-4c4f-8d72-760a45681f68.pdf'. The output should be saved to a temporary text file named 'extracted.txt'",
+    "dependencies": [],
+    "type": "Code"
+  },
+  "count_characters": {
+    "name": "count_characters",
+    "description": "Read the extracted text from the temporary text file named 'extracted.txt' and count the occurrences of numbers (0-9), quotation marks (' and \"), apostrophes ('), and exclamation marks (!). These characters are chosen based on the task requirements, including the punctuation symbol present in the Yahoo logo.",
+    "dependencies": ["extract_text"],
+    "type": "Code"
+  }
+}
+```
+
+And you should also follow the following criteria:
+Subtask Types and Descriptions:
+1. Decide between API or Vision based on task complexity for data retrieval from the internet. You should be consistent when choosing API or Vision, they should not be used together to gather information. 
+2. The other Code or QA tasks planning should be adjusted according to your choice.
+3. Ensure consistency when using Vision; open the webpage with Code first if needed.
+4. Mathematical Problems: Use code for the solution and a QA subtask for result analysis.
+5. Use Code subtasks for file operations; Vision and QA subtasks use code task results for further processing.
+Code:
+1. If the task involves file or operating system operations, such as file reading and writing, downloading, moving, then decompose the Code subtask. 
+2. If you have a task with a URL link to a file format that you can deal with, for example, PDF, you should download it first and then treat it as a usual file.
+3. Anything that can be done with Code, you should not do it with Vision. For example, you can go to a website url with Code, instead of use Vision to navigate.
+4. Ensuring a consistent flow of information between code tasks. If one code task relies on the output from previous one, the previous one should write the results to a file, and the latter task will read that result file. You should specify the exact filename in this process. For instance, if a Code subtask involves extracting data and this data is needed for the next step, specify that the output should be written to a specific file. Then, in the following Code subtask, indicate that this file should be read to obtain the necessary data. This ensures that there is a clear and logical progression from one subtask to the next, maintaining consistency in data handling throughout the task. However, if the latter task is QA type, you should print the result instead of writing to a file.
+API:
+1. Include API paths in API task descriptions. For example, if an API task is to use the "/tools/arxiv" API to find XXX, then the description of the task should be: "Use the '/tools/arxiv' API to search for XXX."
+2. When the task involves retrieving a certain detailed content, then after decomposing the API subtask using Bing Search API, you also need to load the webpage. If it's simple, you can use Bing Load Page API.
+3. When decomposing an API subtask which uses the Bing Load Page API, you need to proceed to plan a QA subtask for analyzing and summarizing the information returned by that API subtask. For example, if the task is to find information about XXX, then your task will be broken down into three subtasks. The first API subtask is to use the Bing Search API to find relevant web page links. The second API subtask is to use the Bing Load Page API to obtain the information of the web pages found in the previous subtask. The final sub-task is a QA subtask, which is used to analyze the web page information returned by the previous sub-task and complete the task.
+QA: 
+1. QA tasks can handle a variety of analytical and interpretative tasks based on text and previous output
+2. If not required, there should not be two continuous QA tasks.
+2. QA subtasks should not directly read images; If you need to have a QA with screenshots, use Vision type.
+Vision:
+1. Vision tasks are suited for GUI operations, identifying elements in images, or making decisions based on visual information.
+2. Vision tasks adapt to various interface designs and should be used when code cannot directly achieve the goal.
+3. Decision-making based on visual information from webpages, images, or videos should be handled through Vision tasks.
+4. If a task requires identifying specific elements within an image or analyzing the content of an image, it can be decomposed into a "Vision" task.
+5. QA subtasks usually use the results of reading files from the Code task and the content returned by the API task to help complete intermediate steps or give the final answer to the task.
+File Handling:
+1. For PowerPoint content, use Code for text extraction and QA for analysis, or Vision if visual content analysis is required.
+2. Attached file types (PDF, PNG, JPG, MP3) can infer the initial subtask type (Vision for images, audio2text API for audio transcription). Then proceed with a QA subtask, which analyzes and completes the task based on the return from the API subtask.
+Actions:
+1. The Action List I gave you contains the name of each action and the corresponding operation description. These actions are all atomic code tasks. You can refer to these atomic operations to decompose the code task.
+Naming:
+1. Subtask names must be abstract (e.g., "search_word" instead of "search_agent").
+2. Specify if operations target a single entity or multiple entities.
+Task Decomposition:
+1. A task can be broken down into one or more subtasks based on complexity.
+2. Subtasks must have detailed descriptions, no entity and operation information in the task can be ignored. If the task has a path to the file, then the subtask that operates the file must write the full path of the file in the task description, for example, add a new sheet, write calculation results into a certain column, etc.
+3. To avoid redundancy in subtask descriptions, break down tasks into distinct steps without repeating details. For example, first, identify and list 'agent' files in the 'document' folder, then move these files to the 'XXX' folder using the list, rather than re-specifying the file criteria in the second step.
+4. Since the analysis or the content of the file are in the return value of the previous subtask, if the following subtask requires the content or the analysis, the previous subtask needs to be added to the dependencies of that subtask.
+4. If the current subtask needs to use the return result of the previous subtask, then write down use last result in the task description of the subtask.
+Gereral Guideline:
+1. Prefer Code and API tasks over Vision for operations that can be achieved programmatically.
+2. Subtasks that involve file operations should include the full file path in their descriptions.
+3. The tasks currently designed are compatible with and can be executed on the present version of the system.
+4. The tasks are executed separately, and when executing one task, it can only read on the output of last task. So if you want to persist some data like large amount of text file, specify to save content to a local file.
+''',
+        '_SYSTEM_TASK_REPLAN_PROMPT': '''
+You are adept at devising new tasks grounded in logical reasoning outcomes. When executing the current task's code, an issue arose unrelated to the code itself. User information includes a reasoning process for addressing this issue. Based on the reasoning's conclusions, please craft a new task to rectify the problem.
+
+Respond only with a reasoning process and a JSON result structured as follows:
+
+1. Formulate new tasks drawing from the current task's error analysis reasoning. For instance, if the error was due to the absence of the 'numpy' package, thereby preventing execution, the new task's reasoning might be: The error analysis indicates a missing 'numpy' package in the environment, necessitating its installation using the pip tool.
+
+2. Four subtask types exist: 'Code subtask' for tasks requiring coding without API usage, often for system or file operations; 'API subtask' for tasks needing internet resource access via APIs for information; 'Vision subtask' for tasks involving visual module actions like clicking, scrolling, or text entry; and 'QA subtask' for tasks analyzing current or previous subtask descriptions and results without needing code, APIs, or vision modules.
+
+3. Decomposed subtasks include four attributes: 'name' for a suitable title based on reasoning, 'description' detailing the subtask process, 'dependencies' listing prerequisite task names, and 'type' indicating the task category (Code, API, Vision, or QA).
+
+4. Following the initial example, the desired JSON format is:
+
+```json
+{
+  "install_numpy": {
+    "name": "install_numpy",
+    "description": "Install the missing 'numpy' package using pip to resolve the execution issue.",
+    "dependencies": [],
+    "type": "Code"
+  }
+}
+```
+
+Adhere to these guidelines:
+
+1. Each designed task, based on reasoning, must be an atomic operation, potentially necessitating multiple tasks to ensure atomicity.
+2. Refer to the provided Action List for atomic operation names and descriptions to design new tasks.
+3. If an Action List atomic operation serves as a new task, adopt its name directly for the subtask.
+4. New tasks must not create dependency loops with current tasks.
+5. New task descriptions must be comprehensive, leaving no detail unaddressed.
+6. Consider 'Current Working Directory' and 'Files and Folders in Current Working Directory' for task generation insights.
+7. Designed tasks should be compatible with and executable on the current system version.
+8. Task names must be abstract, avoiding specifics like "search_agent" or "move_test" in favor of "search_word" or "move_file."
+9. Avoid continuous generation of QA subtasks; no two QA subtasks should depend on each other.
+10. QA subtasks can undertake comprehension analysis, content conversion, summarization, academic question responses, language translation, creative writing, logical reasoning from existing information, and daily life advice.
 ''',
         '_USER_TASK_DECOMPOSE_PROMPT': '''
 User's information are as follows:
@@ -511,6 +1092,17 @@ Action List: {action_list}
 API List: {api_list}
 Current Working Directiory: {working_dir}
 Files And Folders in Current Working Directiory: {files_and_folders}
+''',
+        '_USER_TASK_REDECOMPOSE_PROMPT': '''
+User's information are as follows:
+System Version: {system_version}
+Task: {task}
+Action List: {action_list}
+API List: {api_list}
+Current Working Directiory: {working_dir}
+Files And Folders in Current Working Directiory: {files_and_folders}
+
+Previous Action Results: {pre_task_info}
 ''',
         '_USER_TASK_REPLAN_PROMPT': '''
 User's information are as follows:

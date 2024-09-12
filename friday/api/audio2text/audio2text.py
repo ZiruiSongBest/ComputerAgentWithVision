@@ -1,8 +1,11 @@
 from openai import OpenAI
 import os
+from dotenv import load_dotenv
 
-os.environ["OPENAI_API_KEY"] = ""
-os.environ["OPENAI_ORGANIZATION"] = ""
+load_dotenv()
+
+# os.environ["OPENAI_API_KEY"] = ""
+# os.environ["OPENAI_ORGANIZATION"] = ""
 
 class Audio2TextTool:
     def __init__(self) -> None:
@@ -13,4 +16,4 @@ class Audio2TextTool:
             model="whisper-1",
             file=audio_file
         )
-        return response.texts
+        return response.text

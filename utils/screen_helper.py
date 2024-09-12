@@ -36,7 +36,7 @@ class ScreenHelper:
         if logger:
             self.logger.info(f"ScreenHelper initialized for monitor {monitor}")
     
-    def capture(self, image_name: str = str(datetime.now().strftime("%Y%m%d_%H%M%S")) + '.png') -> Dict:
+    def capture(self, heading = True, image_name: str = str(datetime.now().strftime("%Y%m%d_%H%M%S")) + '.png') -> Dict:
         """
         Captures a screenshot of the specified monitor and returns it as a PIL Image.
 
@@ -49,7 +49,7 @@ class ScreenHelper:
         if image_name:
             captured.append(self.save_image(image_name, captured[0]))
         
-        captured.append(encode_single_data_to_base64(captured[0]))
+        captured.append(encode_single_data_to_base64(captured[0], heading=heading))
         
         captured = {
             'image': captured[0],

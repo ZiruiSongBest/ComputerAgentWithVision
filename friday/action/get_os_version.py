@@ -46,7 +46,7 @@ def get_os_name():
 
 def check_os_version(s):
     if "mac" in s or "Ubuntu" in s or "CentOS" in s or 'Windows' in s:
-        print("perating System Version:", s)
+        print("Operating System Version:", s)
     else:
         raise ValueError("Unknown Operating System")
 

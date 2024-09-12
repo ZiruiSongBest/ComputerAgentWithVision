@@ -81,7 +81,7 @@ def encode_data_to_base64_path(data: Any) -> List[str]:
 
     return encoded_images
 
-def encode_single_data_to_base64(data: Any) -> str:
+def encode_single_data_to_base64(data: Any, heading=True) -> str:
     # Process the single item
     if isinstance(data, str):
         # Check if the string is a file path
@@ -89,7 +89,10 @@ def encode_single_data_to_base64(data: Any) -> str:
             path = assemble_project_path(data)
             encoded_image = encode_image_path(path)
             image_type = path.split(".")[-1].lower()
-            return f"data:image/{image_type};base64,{encoded_image}"
+            if heading:
+                return f"data:image/{image_type};base64,{encoded_image}"
+            else:
+                return encoded_image
         else:
             # The string is not a file path, return as is
             return data
@@ -97,16 +100,25 @@ def encode_single_data_to_base64(data: Any) -> str:
         image = Image.frombytes('RGB', (1920, 1080), data, 'raw', 'BGRX')
         buffered = io.BytesIO()
         image.save(buffered, format="JPEG")
-        return f"data:image/jpeg;base64,{encode_image_binary(buffered.getvalue())}"
+        if heading:
+            return f"data:image/jpeg;base64,{encode_image_binary(buffered.getvalue())}"
+        else:
+            return encode_image_binary(buffered.getvalue())
     elif isinstance(data, Image.Image):
         buffered = io.BytesIO()
         data.save(buffered, format="JPEG")
-        return f"data:image/jpeg;base64,{encode_image_binary(buffered.getvalue())}"
+        if heading:
+            return f"data:image/jpeg;base64,{encode_image_binary(buffered.getvalue())}"
+        else:
+            return encode_image_binary(buffered.getvalue())
     elif isinstance(data, np.ndarray):
         data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
         image = Image.fromarray(data)
         buffered = io.BytesIO()
         image.save(buffered, format="JPEG")
-        return f"data:image/jpeg;base64,{encode_image_binary(buffered.getvalue())}"
+        if heading:
+            return f"data:image/jpeg;base64,{encode_image_binary(buffered.getvalue())}"
+        else:
+            return encode_image_binary(buffered.getvalue())
 
     return ""

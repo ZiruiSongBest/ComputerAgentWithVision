@@ -11,7 +11,6 @@ from utils import json_utils
 import re
 import json
 from utils.logger import Logger
-import copy
 from pathlib import Path
 
 class FridayAgent(BaseAgent):
@@ -53,6 +52,16 @@ class PlanningModule(BaseAgent):
         self.action_graph = defaultdict(list)
         self.execute_list = []
         self.logging = logger
+        self.replan = False
+        
+    def re_init(self):
+        """
+        Reinitialize the planning module.
+        """
+        self.action_num = 0
+        # self.action_node = {}
+        self.action_graph = defaultdict(list)
+        self.execute_list = []
 
     def decompose_task(self, task, action_description_pair):
         """
@@ -64,20 +73,51 @@ class PlanningModule(BaseAgent):
         files_and_folders = self.environment.list_working_dir()
         action_description_pair = json.dumps(action_description_pair)
         response = self.task_decompose_format_message(task, action_description_pair, files_and_folders)
-
-        json_utils.save_json(json_utils.json_append(copy.deepcopy(response), 'task', task), f'planner_response.json', indent=4)
-        
-        self.logging.info(f"The overall response is: {response}", title='Original Response', color='gray')
         decompose_json = self.extract_json_from_string(response)
-        
-        json_utils.save_json(json_utils.json_append(copy.deepcopy(decompose_json), 'task', task), f'planner_response_formatted.json', indent=4)
-        self.logging.info(f"{decompose_json}", title='Decompose Task', color='gray')
 
+        # json_utils.save_json(json_utils.json_append(copy.deepcopy(response), 'task', task), f'friday_planned_response.json', indent=4)
+        # self.logging.info(f"The overall response is: {response}", title='Original Response', color='gray')
         
-        # with open('testcase/planner_response_formatted.json') as f:
+        self.logging.write_json(decompose_json)
+        self.logging.info(f"{json.dumps(decompose_json, indent=4)}", title='Decomposed Task', color='gray')
+        
+        # with open('log/2024-04-14_18-24-53_task_sequence.json') as f:
         #     decompose_json = json.load(f)
         
         # Building action graph and topological ordering of actions
+        self.create_action_graph(decompose_json)
+        self.topological_sort()
+    
+    def redecompose_task(self, overall_task, action_description_pair, current_task):
+        """
+        Implement task disassembly logic.
+        """
+        self.replan = True
+        
+        # Gather relevant information for replanning
+        pre_execute_list = self.execute_list
+        pre_task_information = {}
+        for task in self.action_graph[current_task]:
+            task_info = {
+                "description" : self.action_node[task].description,
+                "return_val" : self.action_node[task].return_val
+            }
+            pre_task_information[task] = task_info
+        pre_task_information[current_task] = {
+            "description" : self.action_node[current_task].description,
+            "return_val" : self.action_node[current_task].return_val
+        }
+        
+        pre_task_information = json.dumps(pre_task_information)
+        files_and_folders = self.environment.list_working_dir()
+        
+        self.re_init()
+        response = self.task_redecompose_format_message(overall_task, action_description_pair, files_and_folders, pre_task_information)
+        decompose_json = self.extract_json_from_string(response)
+        if 'No JSON data found in the string.' in decompose_json:
+            return
+        self.logging.write_json(decompose_json)
+        self.logging.info(f"{json.dumps(decompose_json, indent=4)}", title='REdecompose Task', color='gray')
         self.create_action_graph(decompose_json)
         self.topological_sort()
 
@@ -133,7 +173,29 @@ class PlanningModule(BaseAgent):
             {"role": "user", "content": user_prompt},
         ]
         
-        json_utils.save_json(json_utils.json_append(copy.deepcopy(self.message), 'task', task), f'planner_plan.json', indent=4)
+        # json_utils.save_json(json_utils.json_append(copy.deepcopy(self.message), 'task', task), f'friday_planner_plan.json', indent=4)
+        
+        return self.llm.chat(self.message)
+    
+    def task_redecompose_format_message(self, task, action_list, files_and_folders, pre_task_info):
+        """
+        Send decompse task prompt to LLM and get task list.
+        """
+        api_list = get_open_api_description_pair()
+        sys_prompt = self.prompt['_SYSTEM_TASK_REDECOMPOSE_PROMPT']
+        user_prompt = self.prompt['_USER_TASK_REDECOMPOSE_PROMPT'].format(
+            system_version=self.system_version,
+            task=task,
+            action_list = action_list,
+            api_list = api_list,
+            working_dir = self.environment.working_dir,
+            files_and_folders = files_and_folders,
+            pre_task_info = pre_task_info
+        )
+        self.message = [
+            {"role": "system", "content": sys_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
         
         return self.llm.chat(self.message)
       
@@ -257,6 +319,8 @@ class PlanningModule(BaseAgent):
                 "description" : self.action_node[task].description,
                 "return_val" : self.action_node[task].return_val
             }
+            if self.action_node[task]._relevant_code:
+                task_info["relevant_code"] = self.action_node[task]._relevant_code
             pre_tasks_info[task] = task_info
         pre_tasks_info = json.dumps(pre_tasks_info)
         return pre_tasks_info
@@ -370,6 +434,7 @@ class ExecutionModule(BaseAgent):
         self.open_api_doc_path = get_open_api_doc_path()
         self.open_api_doc = {}
         self.logging = logger
+        self.summarize_threshold = 20000
         with open(self.open_api_doc_path) as f:
             self.open_api_doc = json.load(f) 
     
@@ -405,6 +470,18 @@ class ExecutionModule(BaseAgent):
         self.logging.info("************************</code>*************************")
         state = self.environment.step(code)
         self.logging.info("************************<state>**************************")
+        
+        if state.result != None and len(state.result) > self.summarize_threshold:
+            return_val_short = state.result[:self.summarize_threshold//2] + state.result[-self.summarize_threshold//2:]
+            sys_prompt = self.prompt['_SYSTEM_RETURN_VAL_SUMMARY_PROMPT']
+            user_prompt = f"The return value is too long, only the first {self.summarize_threshold//2} characters and last {self.summarize_threshold//2} characters are displayed. \n" + return_val_short
+            summary_message = [
+                {"role": "system", "content": sys_prompt},
+                {"role": "user", "content": user_prompt},
+            ]
+            state.result = self.llm.chat(summary_message)
+            self.logging.info(state.result, title='Return Value Summarized', color='gray')
+        
         output = {
             "result": state.result,
             "error": state.error
@@ -601,12 +678,22 @@ class ExecutionModule(BaseAgent):
         """
         Send task judge prompt to LLM and get JSON response.
         """
+        if len(code_output) > self.summarize_threshold:
+            code_output = code_output[:self.summarize_threshold//2] + code_output[-self.summarize_threshold//2:]
+            sys_prompt = self.prompt['_SYSTEM_TASK_JUDGE_SUMMARY_PROMPT']
+            user_prompt = f"The code output is too long, only the first {self.summarize_threshold//2} characters are displayed. \n" + code_output
+            summary_message = [
+                {"role": "system", "content": sys_prompt},
+                {"role": "user", "content": user_prompt},
+            ]
+            code_output = self.llm.chat(self.summary_message)
+        
         next_action = json.dumps(next_action)
         sys_prompt = self.prompt['_SYSTEM_TASK_JUDGE_PROMPT']
         user_prompt = self.prompt['_USER_TASK_JUDGE_PROMPT'].format(
             current_code=current_code,
             task=task,
-            code_output=code_output,
+            code_output= "Because the output is too long, this is the summarization of code_output: " + code_output,
             current_working_dir=current_working_dir,
             working_dir=self.environment.working_dir,
             files_and_folders=files_and_folders,
@@ -715,24 +802,33 @@ class ExecutionModule(BaseAgent):
         return info
     
     def generate_call_api_format_message(self, tool_sub_task, tool_api_path, context="No context provided."):
+        # self.logging.warn(self.generate_openapi_doc_2(tool_api_path), title='OpenAPI Doc')
         self.sys_prompt = self.prompt['_SYSTEM_TOOL_USAGE_PROMPT'].format(
-            openapi_doc = json.dumps(self.generate_openapi_doc(tool_api_path)),
+            openapi_doc = json.dumps(self.generate_openapi_doc_2(tool_api_path)),
             tool_sub_task = tool_sub_task,
             context = context
         )
+        # self.logging.info("************************<openapi_doc>**************************")
+        # self.logging.info(self.sys_prompt, title='OpenAPI Doc', color='gray')
+        
         self.user_prompt = self.prompt['_USER_TOOL_USAGE_PROMPT']
         self.message = [
             {"role": "system", "content": self.sys_prompt},
             {"role": "user", "content": self.user_prompt},
         ]
+        # self.logging.info(self.message, title='API Call', color='gray')
         return self.llm.chat(self.message)
     
+    def generate_openapi_doc_2(self, tool_api_path):
+        return self.extract_api_details(self.open_api_doc, tool_api_path)
+        
     def generate_openapi_doc(self, tool_api_path):
         """
         Format openapi document.
         """
         # init current api's doc
         curr_api_doc = {}
+        json_utils.save_json(self.open_api_doc, 'openapi_doc.json', indent=4)
         curr_api_doc["openapi"] = self.open_api_doc["openapi"]
         curr_api_doc["info"] = self.open_api_doc["info"]
         curr_api_doc["paths"] = {}
@@ -766,6 +862,21 @@ class ExecutionModule(BaseAgent):
             api_params_schema_ref = findptr["requestBody"]["content"]["multipart/form-data"]["schema"]["allOf"][0]["$ref"]
         if api_params_schema_ref != None and api_params_schema_ref != "":
             curr_api_doc["components"]["schemas"][api_params_schema_ref.split('/')[-1]] = self.open_api_doc["components"]["schemas"][api_params_schema_ref.split('/')[-1]]
+        
+        # new_api_doc = {}
+        # new_api_doc["path"] = tool_api_path
+        # method = self.open_api_doc["paths"][tool_api_path][0]
+        # if "get" in self.open_api_doc["paths"][tool_api_path]:
+        #     method  = "get"
+        # elif "post" in self.open_api_doc["paths"][tool_api_path]:
+        #     method  = "post"
+        # new_api_doc['method'] = method
+        # new_api_doc["api_summary"] = curr_api_doc['paths'][tool_api_path][method]['summary']
+        # for key, value in curr_api_doc['paths'][tool_api_path][method]["requestBody"]["content"]: # content type
+        #     new_api_doc["contentType"] = key
+        # new_api_doc["contentType"] = curr_api_doc['paths'][tool_api_path][method]["requestBody"]["content"]
+        # details = curr_api_doc['paths'][tool_api_path][method]
+        # new_api_doc["Request Body Format"] = list(details['requestBody']['content'].keys())[0]
         return curr_api_doc
 
     def extract_API_Path(self, text):
@@ -792,6 +903,89 @@ class ExecutionModule(BaseAgent):
         # Remove enclosing quotes (single or double) from the paths
         stripped_paths = [path.strip("'\"") for path in paths]
         return stripped_paths[0]
+    
+    def resolve_ref(self, json_data, ref):
+        """Resolves a $ref to its actual definition in the given JSON data."""
+        parts = ref.split('/')
+        result = json_data
+        for part in parts[1:]:  # Skip the first element as it's always '#'
+            result = result[part]
+        return result
+
+    def extract_types_from_schema_element(self, schema_element):
+        """从schema元素中提取类型信息，处理anyOf和直接定义的类型。"""
+        if 'type' in schema_element:
+            return [schema_element['type']]
+        elif 'anyOf' in schema_element:
+            types = []
+            for sub_element in schema_element['anyOf']:
+                types.extend(self.extract_types_from_schema_element(sub_element))
+            return types
+        else:
+            return ['unknown']
+
+    def extract_properties_from_schema(self, schema, json_data):
+        """递归地从schema中提取属性和类型信息，处理allOf、anyOf和$ref。"""
+        properties = {}
+        required = schema.get('required', [])
+
+        if 'allOf' in schema:
+            for item in schema['allOf']:
+                sub_properties, sub_required = self.extract_properties_from_schema(item, json_data)
+                properties.update(sub_properties)
+                required.extend(sub_required)
+        elif '$ref' in schema:
+            ref_schema = self.resolve_ref(json_data, schema['$ref'])
+            properties, required = self.extract_properties_from_schema(ref_schema, json_data)
+        else:
+            properties = schema.get('properties', {})
+
+        return properties, required
+
+    def extract_api_details(self, json_data, api_path):
+        api_details = json_data['paths'][api_path]
+        for method, details in api_details.items():
+            summary = details['summary']
+            parameters_information = []
+            request_body_format = None
+            
+            # 提取直接定义的参数
+            if 'parameters' in details:
+                for param in details['parameters']:
+                    parameter_info = {
+                        'name': param['name'],
+                        'in': param['in'],
+                        'required': param.get('required', False),
+                        'type': param['schema']['type'] if 'schema' in param else 'unknown'
+                    }
+                    parameters_information.append(parameter_info)
+            
+            # 处理requestBody（如果存在）
+            if 'requestBody' in details:
+                request_body_format = list(details['requestBody']['content'].keys())[0]
+                schema_info = details['requestBody']['content'][request_body_format]['schema']
+                
+                properties, required = self.extract_properties_from_schema(schema_info, json_data)
+                
+                for prop, prop_details in properties.items():
+                    types = self.extract_types_from_schema_element(prop_details)  # 提取参数可能的类型
+                    parameter_info = {
+                        'name': prop,
+                        'type': types,  # 参数可能有多种类型
+                        'required': prop in required
+                    }
+                    parameters_information.append(parameter_info)
+
+            api_details_dict = {
+                'api_path': api_path,
+                'method': method,
+                'summary': summary,
+                'parameters': parameters_information,
+                'request_body_format': request_body_format
+            }
+            
+            return api_details_dict
+
 
 
 

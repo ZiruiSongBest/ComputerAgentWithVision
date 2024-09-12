@@ -1,6 +1,8 @@
 import requests
+import os
 
-ppt_url='http://localhost:8079/tools/ppt'
+BASE_URL = os.getenv("BASE_URL", "http://localhost:8998")
+ppt_url= BASE_URL + '/tools/ppt'
 
 #创建文件
 requests.post(f'{ppt_url}/create_file', json={"theme": "tech"})
