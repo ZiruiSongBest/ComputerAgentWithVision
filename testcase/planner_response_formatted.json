@@ -1,9 +1,0 @@
-{
-    "enter_search_term": {
-        "name": "enter_search_term",
-        "description": "Click on the Google search bar, enter 'weather for today', read and return the weather.",
-        "dependencies": [
-        ],
-        "type": "Vision"
-    }
-}
